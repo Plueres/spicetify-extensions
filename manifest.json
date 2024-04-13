@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Now Playing Song's Release Date",
+        "description": "This extension displays the currently playing track's release date next to the artist(s)",
+        "preview": "Extensions/now-playing-release-date/preview.jpg",
+        "main": "Extensions/now-playing-release-date/NowPlayingReleaseDate.js",
+        "readme": "Extensions/now-playing-release-date/README.md",
+        "authors":
+        [
+            {
+                "name": "Plueres",
+                "url": "https://github.com/Plueres"
+            }
+        ],
+        "tags":
+        [
+            "current song",
+            "now playing",
+            "release date",
+            "currently playing"
+        ]
+    }
+]
