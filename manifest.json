@@ -1,6 +1,6 @@
 [
     {
-        "name": "Now Playing Song's Release Date",
+        "name": "Release Date of Current Song",
         "description": "This extension displays the currently playing track's release date next to the artist(s)",
         "preview": "now-playing-release-date/preview.jpg",
         "main": "now-playing-release-date/NowPlayingReleaseDate.js",
@@ -18,7 +18,6 @@
             "now playing",
             "release date",
             "currently playing"
-        ],
-        "branch": "main"
+        ]
     }
 ]
