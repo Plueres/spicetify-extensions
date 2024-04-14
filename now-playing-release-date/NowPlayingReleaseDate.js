@@ -1,4 +1,5 @@
 // Wait for 2 second before running the script to ensure that Spicetify has loaded.
+console.log('Now Playing Release Date loaded');
 setTimeout(() => initialize(), 2000);
 
 async function initialize() {
