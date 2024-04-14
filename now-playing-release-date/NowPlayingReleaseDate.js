@@ -34,7 +34,7 @@ async function displayReleaseDate() {
             const releaseDateElement = createReleaseDateElement(formattedReleaseDate);
             const container = document.querySelector('.main-trackInfo-artists');
             container.appendChild(releaseDateElement);
-        }, 800);
+        }, 1000);
     } catch (error) {
         console.error('Error displaying release date:', error);
     }
@@ -56,7 +56,7 @@ function createReleaseDateElement(formattedReleaseDate) {
     const artistStyles = window.getComputedStyle(artistElement);
     releaseDateElement.style.fontSize = artistStyles.fontSize;
     releaseDateElement.style.fontWeight = artistStyles.fontWeight;
-    releaseDateElement.style.minWidth = "75px";
+    releaseDateElement.style.minWidth = "fit-content";
 
     return releaseDateElement;
 }
