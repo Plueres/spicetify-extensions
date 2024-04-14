@@ -56,6 +56,7 @@ function createReleaseDateElement(formattedReleaseDate) {
     const artistStyles = window.getComputedStyle(artistElement);
     releaseDateElement.style.fontSize = artistStyles.fontSize;
     releaseDateElement.style.fontWeight = artistStyles.fontWeight;
+    releaseDateElement.style.minWidth = "75px";
 
     return releaseDateElement;
 }
