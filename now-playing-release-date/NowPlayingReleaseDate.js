@@ -1,5 +1,3 @@
-//TODO Add the abitilty to change the location and date format of the release date
-
 console.log('Now Playing Release Date loaded');
 if (!localStorage.getItem('position')) localStorage.setItem('position', '.main-trackInfo-artists');
 setTimeout(() => initialize(), 2000);
