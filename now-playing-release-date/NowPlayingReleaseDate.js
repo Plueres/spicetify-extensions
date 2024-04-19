@@ -34,6 +34,7 @@ async function displayReleaseDate() {
         setTimeout(() => {
             const releaseDateElement = createReleaseDateElement(formattedReleaseDate);
             const container = document.querySelector('.main-trackInfo-artists');
+            container.style.display = 'flex';
             container.appendChild(releaseDateElement);
         }, 1000);
     } catch (error) {
