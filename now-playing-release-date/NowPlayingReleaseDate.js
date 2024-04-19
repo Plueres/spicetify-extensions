@@ -25,7 +25,6 @@ async function displayReleaseDate() {
     try {
         const trackId = Spicetify.Player.data.item.uri.split(":")[2];
         const trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
-        console.log(trackDetails);
         const releaseDate = new Date(trackDetails.album.release_date);
 
         let formattedReleaseDate;
@@ -115,7 +114,6 @@ function createReleaseDateElement(formattedReleaseDate) {
     }
     .Dropdown-optionsList {
         position: fixed;
-        border: 1px solid #ccc;
         background-color:  var(--background-body);
         z-index: 1;
     }
@@ -130,7 +128,7 @@ function createReleaseDateElement(formattedReleaseDate) {
         display: flex;
         gap: 3px;
     }
-`;
+    `;
 
     // Append the style element to the head of the document
     document.head.appendChild(style);
@@ -168,7 +166,7 @@ function createSettingsMenu() {
     const settingsMenu = createDivElement('settingsMenu');
 
     const title = document.createElement("h2");
-    title.textContent = 'Settings';
+    title.textContent = 'NPRD Settings';
     settingsMenu.appendChild(title);
 
     const optionsDiv = document.createElement("div");
