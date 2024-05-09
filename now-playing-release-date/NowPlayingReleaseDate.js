@@ -1,5 +1,5 @@
 console.log('Now Playing Release Date loaded');
-if (!localStorage.getItem('position')) localStorage.setItem('position', '.main-trackInfo-artists');
+if (!localStorage.getItem('position')) localStorage.setItem('position', '.w_TTPh4y9H1YD6UrTMHa.r6Psl2_K_0vpdX6vFLQd');
 setTimeout(() => initialize(), 2000);
 
 async function initialize() {
