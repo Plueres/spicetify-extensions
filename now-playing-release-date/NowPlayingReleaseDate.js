@@ -1,5 +1,5 @@
 console.log('Now Playing Release Date loaded');
-if (!localStorage.getItem('position')) localStorage.setItem('position', '.main-trackInfo-artists');
+if (!localStorage.getItem('position')) localStorage.setItem('position', '.main-trackInfo-artists .main-trackInfo-contentContainer');
 setTimeout(() => initialize(), 2000);
 
 async function initialize() {
@@ -92,6 +92,9 @@ function createReleaseDateElement(formattedReleaseDate) {
         border-radius: 12px;
         flex-direction: column;
     }
+    #settingsMenu h2 {
+        padding: 10px;
+    }
     #optionsDiv {
         display: flex;
         padding: 10px;
@@ -114,7 +117,7 @@ function createReleaseDateElement(formattedReleaseDate) {
     }
     .Dropdown-optionsList {
         position: fixed;
-        background-color:  var(--background-body);
+        background-color:  var(--spice-player);
         z-index: 1;
     }
     .Dropdown-option {
@@ -126,7 +129,6 @@ function createReleaseDateElement(formattedReleaseDate) {
     }
     .main-trackInfo-name {
         display: flex;
-        gap: 3px;
     }
     `;
 
@@ -172,8 +174,9 @@ function createSettingsMenu() {
     const optionsDiv = document.createElement("div");
     optionsDiv.id = 'optionsDiv';
 
+    // This is where the settings for the Positions are located
     const positions = [
-        { value: ".main-trackInfo-artists", text: "Artist" },
+        { value: ".main-trackInfo-artists .main-trackInfo-contentContainer", text: "Artist" },
         { value: ".main-trackInfo-name", text: "Song name" }
     ];
 
