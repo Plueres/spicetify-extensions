@@ -1,5 +1,28 @@
 console.log('Now Playing Release Date loaded');
-if (!localStorage.getItem('position')) localStorage.setItem('position', '.main-trackInfo-artists .main-trackInfo-contentContainer');
+
+// This is where the settings for the Positions, Date formats and separator style are located
+const positions = [
+    { value: ".main-trackInfo-artists .main-trackInfo-contentWrapper", text: "Artist" },
+    { value: ".main-trackInfo-name", text: "Song name" }
+];
+const dateformat = [
+    { value: "DD-MM-YYYY", text: "DD-MM-YYYY" },
+    { value: "MM-DD-YYYY", text: "MM-DD-YYYY" },
+    { value: "YYYY-MM-DD", text: "YYYY-MM-DD" }
+];
+const separator = [
+    { value: " • ", text: "Dot" },
+    { value: " - ", text: "Dash" }
+]
+
+// Default settings
+if (!localStorage.getItem('position')) {
+    localStorage.setItem('position', positions[1].value);
+    localStorage.setItem('dateFormat', dateformat[0].value);
+    localStorage.setItem('separator', separator[0].value);
+}
+
+// Start after 2 seconds to ensure it starts even on slower devices
 setTimeout(() => initialize(), 2000);
 
 async function initialize() {
@@ -45,8 +68,9 @@ async function displayReleaseDate() {
 
         removeExistingReleaseDateElement();
 
+        // Refresh the release date element to not create duplicates
         setTimeout(() => {
-            const releaseDateElement = createReleaseDateElement(formattedReleaseDate);
+            const releaseDateElement = createReleaseDateElement(localStorage.getItem('separator'), formattedReleaseDate);
             const container = document.querySelector(localStorage.getItem('position'));
             container.appendChild(releaseDateElement);
         }, 1000);
@@ -62,10 +86,10 @@ function removeExistingReleaseDateElement() {
     }
 }
 
-function createReleaseDateElement(formattedReleaseDate) {
+function createReleaseDateElement(separator, formattedReleaseDate) {
     const releaseDateElement = createDivElement('releaseDate');
-    const bulletElement = document.createTextNode(" • ");
-    releaseDateElement.appendChild(bulletElement);
+    const separatorElement = document.createTextNode(separator);
+    releaseDateElement.appendChild(separatorElement);
 
     const dateElement = createAnchorElement(formattedReleaseDate);
     releaseDateElement.appendChild(dateElement);
@@ -132,7 +156,7 @@ function createReleaseDateElement(formattedReleaseDate) {
     }
     `;
 
-    // Append the style element to the head of the document
+    // Add the style element to the head of the document
     document.head.appendChild(style);
 
     document.body.appendChild(settingsMenu);
@@ -145,12 +169,14 @@ function createReleaseDateElement(formattedReleaseDate) {
     return releaseDateElement;
 }
 
+// Create outer shell element
 function createDivElement(id) {
     const divElement = document.createElement("div");
     divElement.id = id;
     return divElement;
 }
 
+// Create clickable element to open pop-up
 function createAnchorElement(textContent) {
     const anchorElement = document.createElement("a");
     anchorElement.textContent = textContent;
@@ -158,6 +184,7 @@ function createAnchorElement(textContent) {
     return anchorElement;
 }
 
+// Add styling to the release date element
 function setElementStyles(element, styles) {
     element.style.fontSize = styles.fontSize;
     element.style.fontWeight = styles.fontWeight;
@@ -174,23 +201,14 @@ function createSettingsMenu() {
     const optionsDiv = document.createElement("div");
     optionsDiv.id = 'optionsDiv';
 
-    // This is where the settings for the Positions are located
-    const positions = [
-        { value: ".main-trackInfo-artists .main-trackInfo-contentContainer", text: "Artist" },
-        { value: ".main-trackInfo-name", text: "Song name" }
-    ];
-
     const positionDropdown = createDropdown("position", "Position", positions);
     optionsDiv.appendChild(positionDropdown);
 
-    const dateformat = [
-        { value: "DD-MM-YYYY", text: "DD-MM-YYYY" },
-        { value: "MM-DD-YYYY", text: "MM-DD-YYYY" },
-        { value: "YYYY-MM-DD", text: "YYYY-MM-DD" }
-    ];
-
     const dateFormatDropdown = createDropdown("dateformat", "Date Format", dateformat);
     optionsDiv.appendChild(dateFormatDropdown);
+
+    const separatorDropdown = createDropdown("separator", "Separator style", separator);
+    optionsDiv.appendChild(separatorDropdown);
 
     settingsMenu.appendChild(optionsDiv);
 
