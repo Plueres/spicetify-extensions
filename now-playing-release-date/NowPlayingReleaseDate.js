@@ -2,7 +2,7 @@ console.log('Now Playing Release Date loaded');
 
 // This is where the settings for the Positions, Date formats and separator style are located
 const positions = [
-    { value: ".main-trackInfo-artists .main-trackInfo-contentWrapper", text: "Artist" },
+    { value: ".main-nowPlayingWidget-trackInfo .main-trackInfo-artists", text: "Artist" },
     { value: ".main-trackInfo-name", text: "Song name" }
 ];
 const dateformat = [
@@ -11,8 +11,8 @@ const dateformat = [
     { value: "YYYY-MM-DD", text: "YYYY-MM-DD" }
 ];
 const separator = [
-    { value: " • ", text: "Dot" },
-    { value: " - ", text: "Dash" }
+    { value: "•", text: "Dot" },
+    { value: "-", text: "Dash" }
 ]
 
 // Default settings
@@ -36,85 +36,18 @@ async function initialize() {
     } catch (error) {
         console.error('Error initializing:', error);
     }
-}
-
-async function waitForSpicetify() {
-    while (!Spicetify || !Spicetify.showNotification) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
-}
-
-async function displayReleaseDate() {
-    try {
-        const trackId = Spicetify.Player.data.item.uri.split(":")[2];
-        const trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
-        const releaseDate = new Date(trackDetails.album.release_date);
-
-        let formattedReleaseDate;
-
-        switch (localStorage.getItem('dateformat')) {
-            case "DD-MM-YYYY":
-                formattedReleaseDate = `${String(releaseDate.getDate()).padStart(2, '0')}-${String(releaseDate.getMonth() + 1).padStart(2, '0')}-${releaseDate.getFullYear()}`;
-                break;
-            case "MM-DD-YYYY":
-                formattedReleaseDate = `${String(releaseDate.getMonth() + 1).padStart(2, '0')}-${String(releaseDate.getDate()).padStart(2, '0')}-${releaseDate.getFullYear()}`;
-                break;
-            case "YYYY-MM-DD":
-                formattedReleaseDate = `${releaseDate.getFullYear()}-${String(releaseDate.getMonth() + 1).padStart(2, '0')}-${String(releaseDate.getDate()).padStart(2, '0')}`;
-                break;
-            default:
-                formattedReleaseDate = releaseDate;
-        }
-
-        removeExistingReleaseDateElement();
-
-        // Refresh the release date element to not create duplicates
-        setTimeout(() => {
-            const releaseDateElement = createReleaseDateElement(localStorage.getItem('separator'), formattedReleaseDate);
-            const container = document.querySelector(localStorage.getItem('position'));
-            container.appendChild(releaseDateElement);
-        }, 1000);
-    } catch (error) {
-        console.error('Error displaying release date:', error);
-    }
-}
-
-function removeExistingReleaseDateElement() {
-    const existingReleaseDateElement = document.getElementById('releaseDate');
-    if (existingReleaseDateElement) {
-        existingReleaseDateElement.remove();
-    }
-}
-
-function createReleaseDateElement(separator, formattedReleaseDate) {
-    const releaseDateElement = createDivElement('releaseDate');
-    const separatorElement = document.createTextNode(separator);
-    releaseDateElement.appendChild(separatorElement);
-
-    const dateElement = createAnchorElement(formattedReleaseDate);
-    releaseDateElement.appendChild(dateElement);
-
-    const targetedElement = document.querySelector(localStorage.getItem('position') + ' a');
-    const targetedStyles = window.getComputedStyle(targetedElement);
-    setElementStyles(releaseDateElement, targetedStyles);
-
-    const existingSettingsMenu = document.getElementById('settingsMenu');
-    if (existingSettingsMenu) {
-        document.body.removeChild(existingSettingsMenu);
-    }
-
-    const settingsMenu = createSettingsMenu();
 
     const style = document.createElement('style');
     style.innerHTML = `
     #settingsMenu {
         display: none;
         position: absolute;
-        background-color: var(--background-body);
+        background-color: var(--spice-player);
         padding: 16px;
         margin: 24px 0;
         border-radius: 12px;
         flex-direction: column;
+        
     }
     #settingsMenu h2 {
         padding: 10px;
@@ -151,13 +84,100 @@ function createReleaseDateElement(separator, formattedReleaseDate) {
     .Dropdown-option:hover {
         background-color: #f0f0f0;
     }
-    .main-trackInfo-name {
+    
+    /* spacing and inline alignment */
+    .main-nowPlayingWidget-trackInfo .main-trackInfo-artists,
+    .main-nowPlayingWidget-trackInfo .main-trackInfo-name,
+    #releaseDate {
         display: flex;
+        gap: 3px;
+        white-space: nowrap;
+    }
+    /* padding for readability */
+    /* #releaseDate {
+    *     padding-left: 10px;
+    */ }
+    .main-trackInfo-artists #releaseDate p:contains("•") {
+        transform: translateY(-1px);
+    }
+    .main-trackInfo-overlay {
+        margin-right: -10px;
     }
     `;
 
     // Add the style element to the head of the document
     document.head.appendChild(style);
+}
+
+async function waitForSpicetify() {
+    while (!Spicetify || !Spicetify.showNotification) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+}
+
+async function displayReleaseDate() {
+    try {
+        const trackId = Spicetify.Player.data.item.uri.split(":")[2];
+        const trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
+        const releaseDate = new Date(trackDetails.album.release_date);
+
+        let formattedReleaseDate;
+
+        // Set formatting for selected date
+        switch (localStorage.getItem('dateformat')) {
+            case "DD-MM-YYYY":
+                formattedReleaseDate = `${String(releaseDate.getDate()).padStart(2, '0')}-${String(releaseDate.getMonth() + 1).padStart(2, '0')}-${releaseDate.getFullYear()}`;
+                break;
+            case "MM-DD-YYYY":
+                formattedReleaseDate = `${String(releaseDate.getMonth() + 1).padStart(2, '0')}-${String(releaseDate.getDate()).padStart(2, '0')}-${releaseDate.getFullYear()}`;
+                break;
+            case "YYYY-MM-DD":
+                formattedReleaseDate = `${releaseDate.getFullYear()}-${String(releaseDate.getMonth() + 1).padStart(2, '0')}-${String(releaseDate.getDate()).padStart(2, '0')}`;
+                break;
+            default:
+                formattedReleaseDate = releaseDate;
+        }
+
+        removeExistingReleaseDateElement();
+
+        // Refresh the release date element to not create duplicates
+        setTimeout(() => {
+            const releaseDateElement = createReleaseDateElement(localStorage.getItem('separator'), formattedReleaseDate);
+            const container = document.querySelector(localStorage.getItem('position'));
+            container.appendChild(releaseDateElement);
+        }, 1000);
+    } catch (error) {
+        console.error('Error displaying release date:', error);
+    }
+}
+
+function removeExistingReleaseDateElement() {
+    const existingReleaseDateElement = document.getElementById('releaseDate');
+    if (existingReleaseDateElement) {
+        existingReleaseDateElement.remove();
+    }
+}
+
+function createReleaseDateElement(separator, formattedReleaseDate) {
+    const releaseDateElement = createDivElement('releaseDate');
+
+    const separatorElement = document.createElement("p");
+    separatorElement.textContent = separator;
+    releaseDateElement.appendChild(separatorElement);
+
+    const dateElement = createAnchorElement(formattedReleaseDate);
+    releaseDateElement.appendChild(dateElement);
+
+    const targetedElement = document.querySelector(localStorage.getItem('position') + ' a');
+    const targetedStyles = window.getComputedStyle(targetedElement);
+    setElementStyles(releaseDateElement, targetedStyles);
+
+    const existingSettingsMenu = document.getElementById('settingsMenu');
+    if (existingSettingsMenu) {
+        document.body.removeChild(existingSettingsMenu);
+    }
+
+    const settingsMenu = createSettingsMenu();
 
     document.body.appendChild(settingsMenu);
 
@@ -214,7 +234,6 @@ function createSettingsMenu() {
 
     return settingsMenu;
 }
-
 
 function createDropdown(id, label, options) {
     const dropdownContainer = document.createElement("div");
