@@ -95,7 +95,7 @@ async function initialize() {
     }
     /* padding for readability */
     #releaseDate {
-        padding-left: 10px;
+        padding-left: 6px;
     }
     /*
     .main-trackInfo-artists #releaseDate p:contains("•") {
