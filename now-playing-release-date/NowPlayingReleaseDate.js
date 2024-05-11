@@ -94,14 +94,16 @@ async function initialize() {
         white-space: nowrap;
     }
     /* padding for readability */
-    /* #releaseDate {
-    *     padding-left: 10px;
-    */ }
+    #releaseDate {
+        padding-left: 10px;
+    }
+    /*
     .main-trackInfo-artists #releaseDate p:contains("•") {
         transform: translateY(-1px);
     }
+    */
     .main-trackInfo-overlay {
-        margin-right: -10px;
+        margin-right: -8px;
     }
     `;
 
