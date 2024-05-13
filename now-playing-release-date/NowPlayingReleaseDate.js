@@ -15,15 +15,16 @@ const separator = [
     { value: "-", text: "Dash" }
 ]
 
-// Default settings
+// Default settings if none are found
+//* remove the ! if you are testing, and the settings are set wrong in the localStorage
 if (!localStorage.getItem('position')) {
     localStorage.setItem('position', positions[1].value);
     localStorage.setItem('dateFormat', dateformat[0].value);
     localStorage.setItem('separator', separator[0].value);
 }
 
-// Start after 2 seconds to ensure it starts even on slower devices
-setTimeout(() => initialize(), 2000);
+// Start after 3 seconds to ensure it starts even on slower devices
+setTimeout(() => initialize(), 3000);
 
 async function initialize() {
     try {
@@ -95,7 +96,7 @@ async function initialize() {
     }
     /* padding for readability */
     #releaseDate {
-        padding-left: 6px;
+        padding-left: 8px;
     }
     /*
     .main-trackInfo-artists #releaseDate p:contains("•") {
@@ -185,7 +186,7 @@ function createReleaseDateElement(separator, formattedReleaseDate) {
 
     dateElement.addEventListener('click', function (event) {
         event.preventDefault();
-        toggleSettingsMenu(event, dateElement, settingsMenu);
+        toggleSettingsMenu(dateElement, settingsMenu);
     });
 
     return releaseDateElement;
@@ -310,7 +311,7 @@ function createOption(value, text, dropdown, selectedOption) {
     return option;
 }
 
-function toggleSettingsMenu(event, dateElement, settingsMenu) {
+function toggleSettingsMenu(dateElement, settingsMenu) {
     const rect = dateElement.getBoundingClientRect();
 
     settingsMenu.style.position = 'fixed';
