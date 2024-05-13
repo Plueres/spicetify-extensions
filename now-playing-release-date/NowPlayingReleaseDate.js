@@ -2,8 +2,8 @@ console.log('Now Playing Release Date loaded');
 
 // This is where the settings for the Positions, Date formats and separator style are located
 const positions = [
-    { value: ".main-nowPlayingWidget-trackInfo .main-trackInfo-artists", text: "Artist" },
-    { value: ".main-trackInfo-name", text: "Song name" }
+    { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-artists", text: "Artist" },
+    { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-name", text: "Song name" }
 ];
 const dateformat = [
     { value: "DD-MM-YYYY", text: "DD-MM-YYYY" },
@@ -21,6 +21,8 @@ if (!localStorage.getItem('position')) {
     localStorage.setItem('position', positions[1].value);
     localStorage.setItem('dateFormat', dateformat[0].value);
     localStorage.setItem('separator', separator[0].value);
+} else if (localStorage.getItem('position') != positions[0].value || localStorage.getItem('position') != positions[1].value) {
+    localStorage.setItem('position', positions[1].value);
 }
 
 // Start after 3 seconds to ensure it starts even on slower devices
@@ -29,9 +31,13 @@ setTimeout(() => initialize(), 3000);
 async function initialize() {
     try {
         await waitForSpicetify();
+        // Debounce the song change event to prevent multiple calls
+        let debounceTimer;
         Spicetify.Player.addEventListener("songchange", async () => {
+            // Remove the existing release date element immediately when the song changes
             removeExistingReleaseDateElement();
-            await displayReleaseDate();
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => { await displayReleaseDate(); }, 1000);
         });
         await displayReleaseDate();
     } catch (error) {
@@ -87,8 +93,8 @@ async function initialize() {
     }
     
     /* spacing and inline alignment */
-    .main-nowPlayingWidget-trackInfo .main-trackInfo-artists,
-    .main-nowPlayingWidget-trackInfo .main-trackInfo-name,
+    .main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-artists,
+    .main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-name,
     #releaseDate {
         display: flex;
         gap: 3px;
