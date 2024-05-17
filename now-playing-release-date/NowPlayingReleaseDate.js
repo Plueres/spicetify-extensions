@@ -25,6 +25,18 @@ if (!localStorage.getItem('position')) {
     localStorage.setItem('position', positions[1].value);
 }
 
+// Wrap the code in an async function
+async function getTrackDetails() {
+    let trackId = Spicetify.Player.data.item.uri.split(":")[2];
+    let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
+    let albumName = new String(trackDetails.album.name);
+    let albumUrl = new String(trackDetails.album.external_urls.spotify);
+    let releaseDate = new Date(trackDetails.album.release_date);
+    console.log('Track details:', trackDetails);
+
+    return { trackId, albumName, albumUrl, releaseDate, trackDetails };
+}
+
 // Start after 3 seconds to ensure it starts even on slower devices
 setTimeout(() => initialize(), 3000);
 
@@ -54,19 +66,28 @@ async function initialize() {
         margin: 24px 0;
         border-radius: 12px;
         flex-direction: column;
-        
+        min-width: 16vw;
+        max-width: 20vw;
     }
-    #settingsMenu h2 {
+    #settingsMenu h2, #settingsMenu #optionsDiv, #settingsMenu a {
         padding: 10px;
     }
     #optionsDiv {
         display: flex;
-        padding: 10px;
         flex-direction: column;
+    }
+    #settingsMenu a {
+        color: var(--text-bright-accent, #117a37);
+        max-width: 100%;
+        overflow: hidden;
+        display: inline-block; /* This is necessary for max-width to work on inline elements like 'a' */
+        white-space: nowrap; /* This prevents the text from wrapping to the next line */
+        text-overflow: ellipsis; /* This adds an ellipsis (...) when the text is cut off */
     }
     .Dropdown-container {
         overflow: visible; 
         display: flex;
+        justify-content: space-between;
         align-items: center;
         margin-top: 10px;
         gap: 10px;
@@ -78,6 +99,8 @@ async function initialize() {
         border: 1px solid #ccc;
         padding: 5px;
         cursor: pointer;
+        min-width: fit-content;
+        max-width: 10rem;
     }
     .Dropdown-optionsList {
         position: fixed;
@@ -126,9 +149,7 @@ async function waitForSpicetify() {
 
 async function displayReleaseDate() {
     try {
-        const trackId = Spicetify.Player.data.item.uri.split(":")[2];
-        const trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
-        const releaseDate = new Date(trackDetails.album.release_date);
+        const { releaseDate } = await getTrackDetails();
 
         let formattedReleaseDate;
 
@@ -240,6 +261,16 @@ function createSettingsMenu() {
     optionsDiv.appendChild(separatorDropdown);
 
     settingsMenu.appendChild(optionsDiv);
+
+    getTrackDetails().then(({ albumName, albumUrl }) => {
+        // Create album link
+        const albumLinkElement = document.createElement('a');
+        console.log(albumName, "  ", albumUrl);
+        albumLinkElement.href = albumUrl;
+        albumLinkElement.textContent = `Go to ${albumName}`;
+
+        settingsMenu.appendChild(albumLinkElement);
+    });
 
     return settingsMenu;
 }
