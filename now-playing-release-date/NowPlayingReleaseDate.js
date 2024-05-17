@@ -265,7 +265,6 @@ function createSettingsMenu() {
     getTrackDetails().then(({ albumName, albumUrl }) => {
         // Create album link
         const albumLinkElement = document.createElement('a');
-        console.log(albumName, "  ", albumUrl);
         albumLinkElement.href = albumUrl;
         albumLinkElement.textContent = `Go to ${albumName}`;
 
