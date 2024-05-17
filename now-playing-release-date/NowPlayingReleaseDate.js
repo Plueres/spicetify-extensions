@@ -266,7 +266,7 @@ function createSettingsMenu() {
         // Create album link
         const albumLinkElement = document.createElement('a');
         albumLinkElement.href = albumUrl;
-        albumLinkElement.textContent = `Go to ${albumName}`;
+        albumLinkElement.textContent = `Go to "${albumName}"`;
 
         settingsMenu.appendChild(albumLinkElement);
     });
