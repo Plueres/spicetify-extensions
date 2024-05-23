@@ -119,7 +119,7 @@ async function getTrackDetails() {
     //? Uncomment the line below to see the track details in the console
     // console.log('Track details:', trackDetails);
 
-    return { trackId, album, releaseDate, trackDetails };
+    return { album, releaseDate, trackDetails };
 }
 
 // Start after 3 seconds to ensure it starts even on slower devices
