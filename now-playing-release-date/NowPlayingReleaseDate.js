@@ -1,5 +1,6 @@
 console.log('Now Playing Release Date loaded');
 
+
 // This is where the settings for the Positions, Date formats and separator style are located
 const positions = [
     { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-artists", text: "Artist" },
@@ -15,8 +16,8 @@ const separator = [
     { value: "-", text: "Dash" }
 ]
 
-const style = document.createElement('style');
-style.innerHTML = `
+const ReleaseDatestyle = document.createElement('style');
+ReleaseDatestyle.innerHTML = `
     #settingsMenu {
         display: none;
         position: absolute;
@@ -100,7 +101,7 @@ style.innerHTML = `
     `;
 
 // Default settings if none are found
-//* remove the ! if you are testing, and the settings are set wrong in the localStorage
+//* remove the ! if you are testing, and/or the settings are set wrong in the localStorage
 if (!localStorage.getItem('position')) {
     localStorage.setItem('position', positions[1].value);
     localStorage.setItem('dateFormat', dateformat[0].value);
@@ -111,19 +112,20 @@ if (!localStorage.getItem('position')) {
 }
 
 // Get the track details from the Spotify API
-async function getTrackDetails() {
+async function getTrackDetailsRD() {
     let trackId = Spicetify.Player.data.item.uri.split(":")[2];
     let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
     let album = trackDetails.album;
     let releaseDate = new Date(trackDetails.album.release_date);
     //? Uncomment the line below to see the track details in the console
     // console.log('Track details:', trackDetails);
+    // console.log(await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`));
 
     return { album, releaseDate, trackDetails };
 }
 
 // Start after 3 seconds to ensure it starts even on slower devices
-setTimeout(() => initialize(style), 3000);
+setTimeout(() => initializeRD(ReleaseDatestyle), 3000);
 
 
 
@@ -134,7 +136,7 @@ async function waitForSpicetify() {
     }
 }
 
-async function initialize(style) {
+async function initializeRD(styleElement) {
     try {
         await waitForSpicetify();
         // Debounce the song change event to prevent multiple calls
@@ -143,20 +145,20 @@ async function initialize(style) {
             // Remove the existing release date element immediately when the song changes
             removeExistingReleaseDateElement();
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(async () => { await displayReleaseDate(); }, 1000);
+            debounceTimer = setTimeout(async () => { await displayReleaseDate(); }, 3000);
         });
-        await displayReleaseDate();
+        Spicetify.Player.dispatchEvent(new Event('songchange'));
     } catch (error) {
         console.error('Error initializing: ', error, "\nCreate a new issue on the github repo to get this resolved");
     }
 
     // Add the style element to the head of the document
-    document.head.appendChild(style);
+    document.head.appendChild(styleElement);
 }
 
 async function displayReleaseDate() {
     try {
-        const { releaseDate } = await getTrackDetails();
+        const { releaseDate } = await getTrackDetailsRD();
 
         let formattedReleaseDate;
 
@@ -271,7 +273,7 @@ function createSettingsMenu() {
 
     settingsMenu.appendChild(optionsDiv);
 
-    getTrackDetails().then(({ album }) => {
+    getTrackDetailsRD().then(({ album }) => {
         // Create album link
         const albumLinkElement = document.createElement('a');
         albumLinkElement.href = album.external_urls.spotify;
