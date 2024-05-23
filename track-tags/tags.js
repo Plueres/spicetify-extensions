@@ -20,7 +20,7 @@ async function getTrackDetails_tags() {
     let savedTrack = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`);
     let downloadedSongs = await Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length)
 
-    console.log("Currently playing ", trackDetails);
+    // console.log("Currently playing ", trackDetails);
 
     return { trackDetails, savedTrack, downloadedSongs };
 }
