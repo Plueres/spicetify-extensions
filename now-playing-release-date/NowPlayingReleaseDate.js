@@ -124,9 +124,25 @@ async function getTrackDetailsRD() {
     return { album, releaseDate, trackDetails };
 }
 
-// Start after 3 seconds to ensure it starts even on slower devices
-setTimeout(() => initializeRD(ReleaseDatestyle), 3000);
-
+const releaseDateObserver = new MutationObserver((mutationsList, observer) => {
+    // Look through all mutations that just occured
+    for (let mutation of mutationsList) {
+        // If the addedNodes property has one or more nodes
+        if (mutation.addedNodes.length) {
+            // Check if the first added node is an element node
+            if (mutation.addedNodes[0].nodeType === Node.ELEMENT_NODE) {
+                const spicetifyLoaded = mutation.addedNodes[0].querySelector('.main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced');
+                if (spicetifyLoaded) {
+                    initializeRD(ReleaseDatestyle);
+                    observer.disconnect();  // Stop observing
+                    break;
+                }
+            }
+        }
+    }
+});
+// Start the script
+releaseDateObserver.observe(document, { childList: true, subtree: true });
 
 
 // Wait for spicetify to load initially

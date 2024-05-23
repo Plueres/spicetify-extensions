@@ -19,5 +19,26 @@
             "release date",
             "currently playing"
         ]
+    },
+    {
+        "name": "Track Tags",
+        "description": "Displays tags like downloaded, explicit and liked song on the now playing track",
+        "preview": "track-tags/preview.jpg",
+        "main": "track-tags/tags.js",
+        "readme": "track-tags/README.md",
+        "authors":
+        [
+            {
+                "name": "Plueres",
+                "url": "https://github.com/Plueres"
+            }
+        ],
+        "tags":
+        [
+            "tags",
+            "downloaded",
+            "liked song",
+            "explicit"
+        ]
     }
 ]
