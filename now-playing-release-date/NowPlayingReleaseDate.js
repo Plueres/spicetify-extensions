@@ -15,49 +15,8 @@ const separator = [
     { value: "-", text: "Dash" }
 ]
 
-// Default settings if none are found
-//* remove the ! if you are testing, and the settings are set wrong in the localStorage
-if (!localStorage.getItem('position')) {
-    localStorage.setItem('position', positions[1].value);
-    localStorage.setItem('dateFormat', dateformat[0].value);
-    localStorage.setItem('separator', separator[0].value);
-} else if (localStorage.getItem('position') != positions[0].value || localStorage.getItem('position') != positions[1].value) {
-    localStorage.setItem('position', positions[1].value);
-}
-
-// Wrap the code in an async function
-async function getTrackDetails() {
-    let trackId = Spicetify.Player.data.item.uri.split(":")[2];
-    let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
-    let albumName = new String(trackDetails.album.name);
-    let albumUrl = new String(trackDetails.album.external_urls.spotify);
-    let releaseDate = new Date(trackDetails.album.release_date);
-    console.log('Track details:', trackDetails);
-
-    return { trackId, albumName, albumUrl, releaseDate, trackDetails };
-}
-
-// Start after 3 seconds to ensure it starts even on slower devices
-setTimeout(() => initialize(), 3000);
-
-async function initialize() {
-    try {
-        await waitForSpicetify();
-        // Debounce the song change event to prevent multiple calls
-        let debounceTimer;
-        Spicetify.Player.addEventListener("songchange", async () => {
-            // Remove the existing release date element immediately when the song changes
-            removeExistingReleaseDateElement();
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(async () => { await displayReleaseDate(); }, 1000);
-        });
-        await displayReleaseDate();
-    } catch (error) {
-        console.error('Error initializing:', error);
-    }
-
-    const style = document.createElement('style');
-    style.innerHTML = `
+const style = document.createElement('style');
+style.innerHTML = `
     #settingsMenu {
         display: none;
         position: absolute;
@@ -77,12 +36,15 @@ async function initialize() {
         flex-direction: column;
     }
     #settingsMenu a {
-        color: var(--text-bright-accent, #117a37);
+        display: flex;
+        align-items: center;
         max-width: 100%;
         overflow: hidden;
-        display: inline-block; /* This is necessary for max-width to work on inline elements like 'a' */
-        white-space: nowrap; /* This prevents the text from wrapping to the next line */
-        text-overflow: ellipsis; /* This adds an ellipsis (...) when the text is cut off */
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    #settingsMenu a:hover {
+        color: var(--text-bright-accent, #117a37);
     }
     .Dropdown-container {
         overflow: visible; 
@@ -137,14 +99,59 @@ async function initialize() {
     }
     `;
 
-    // Add the style element to the head of the document
-    document.head.appendChild(style);
+// Default settings if none are found
+//* remove the ! if you are testing, and the settings are set wrong in the localStorage
+if (!localStorage.getItem('position')) {
+    localStorage.setItem('position', positions[1].value);
+    localStorage.setItem('dateFormat', dateformat[0].value);
+    localStorage.setItem('separator', separator[0].value);
+} else if (localStorage.getItem('position') != positions[0].value && localStorage.getItem('position') != positions[1].value) {
+    // Fallback for the position setting if it's not found in the positions array
+    localStorage.setItem('position', positions[1].value);
 }
 
+// Get the track details from the Spotify API
+async function getTrackDetails() {
+    let trackId = Spicetify.Player.data.item.uri.split(":")[2];
+    let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
+    let album = trackDetails.album;
+    let releaseDate = new Date(trackDetails.album.release_date);
+    //? Uncomment the line below to see the track details in the console
+    // console.log('Track details:', trackDetails);
+
+    return { trackId, album, releaseDate, trackDetails };
+}
+
+// Start after 3 seconds to ensure it starts even on slower devices
+setTimeout(() => initialize(style), 3000);
+
+
+
+// Wait for spicetify to load initially
 async function waitForSpicetify() {
     while (!Spicetify || !Spicetify.showNotification) {
         await new Promise(resolve => setTimeout(resolve, 100));
     }
+}
+
+async function initialize(style) {
+    try {
+        await waitForSpicetify();
+        // Debounce the song change event to prevent multiple calls
+        let debounceTimer;
+        Spicetify.Player.addEventListener("songchange", async () => {
+            // Remove the existing release date element immediately when the song changes
+            removeExistingReleaseDateElement();
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => { await displayReleaseDate(); }, 1000);
+        });
+        await displayReleaseDate();
+    } catch (error) {
+        console.error('Error initializing: ', error, "\nCreate a new issue on the github repo to get this resolved");
+    }
+
+    // Add the style element to the head of the document
+    document.head.appendChild(style);
 }
 
 async function displayReleaseDate() {
@@ -183,8 +190,10 @@ async function displayReleaseDate() {
 
 function removeExistingReleaseDateElement() {
     const existingReleaseDateElement = document.getElementById('releaseDate');
+    const existingReleaseDateSettingsElement = document.getElementById('settingsMenu');
     if (existingReleaseDateElement) {
         existingReleaseDateElement.remove();
+        existingReleaseDateSettingsElement.remove();
     }
 }
 
@@ -262,11 +271,33 @@ function createSettingsMenu() {
 
     settingsMenu.appendChild(optionsDiv);
 
-    getTrackDetails().then(({ albumName, albumUrl }) => {
+    getTrackDetails().then(({ album }) => {
         // Create album link
         const albumLinkElement = document.createElement('a');
-        albumLinkElement.href = albumUrl;
-        albumLinkElement.textContent = `Go to "${albumName}"`;
+        albumLinkElement.href = album.external_urls.spotify;
+
+        // Create album image
+        const albumImageElement = document.createElement('img');
+        albumImageElement.src = album.images[2].url;
+        albumImageElement.width = album.images[2].width / 3 * 2;
+        albumImageElement.height = album.images[2].height / 3 * 2;
+        albumImageElement.style.marginRight = '1rem';
+
+        const albumNameElement = document.createElement('p');
+        albumNameElement.textContent = `${album.name} - ${album.artists[0].name} \n`;
+
+        const albumTypeElement = document.createElement('p');
+        albumTypeElement.textContent = album.album_type;
+        albumTypeElement.style.cssText = "text-transform: capitalize;";
+
+        // Create a new container
+        const albumContainer = document.createElement('div');
+
+        albumContainer.appendChild(albumNameElement);
+        albumContainer.appendChild(albumTypeElement);
+        // Append the image and the text to the album link
+        albumLinkElement.appendChild(albumImageElement);
+        albumLinkElement.appendChild(albumContainer);
 
         settingsMenu.appendChild(albumLinkElement);
     });
