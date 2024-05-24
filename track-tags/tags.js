@@ -25,25 +25,9 @@ async function getTrackDetails_tags() {
     return { trackDetails, savedTrack, downloadedSongs };
 }
 
-const tagObserver = new MutationObserver(async (mutationsList, observer) => {
-    // Look through all mutations that just occured
-    for (let mutation of mutationsList) {
-        // If the addedNodes property has one or more nodes
-        if (mutation.addedNodes.length) {
-            // Check if the first added node is an element node
-            if (mutation.addedNodes[0].nodeType === Node.ELEMENT_NODE) {
-                const spicetifyLoaded = mutation.addedNodes[0].querySelector('.main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced');
-                if (spicetifyLoaded) {
-                    initializeTags(tagStyle);
-                    observer.disconnect();  // Stop observing
-                    break;
-                }
-            }
-        }
-    }
-});
-// Start the script
-tagObserver.observe(document, { childList: true, subtree: true });
+
+// Start after 3 seconds to ensure it starts even on slower devices
+setTimeout(() => initializeTags(tagStyle), 3000);
 
 // Wait for spicetify to load initially
 async function waitForSpicetify() {
@@ -84,7 +68,7 @@ async function displayTags() {
 
         downloadedSongs.items.forEach(song => {
             if (song.uri.includes(trackDetails.id)) {
-                // console.log('curr song: ', song.uri, "\nDownloaded: ", true);
+                console.log('current song: ', song.uri, "\nDownloaded: ", true);
                 downloaded = true;
             }
         });

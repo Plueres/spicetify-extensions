@@ -16,8 +16,8 @@ const separator = [
     { value: "-", text: "Dash" }
 ]
 
-const ReleaseDatestyle = document.createElement('style');
-ReleaseDatestyle.innerHTML = `
+const ReleaseDateStyle = document.createElement('style');
+ReleaseDateStyle.innerHTML = `
     #settingsMenu {
         display: none;
         position: absolute;
@@ -119,31 +119,15 @@ async function getTrackDetailsRD() {
     let album = trackDetails.album;
     let releaseDate = new Date(trackDetails.album.release_date);
     //? Uncomment the line below to see the track details in the console
-    // console.log('Track details:', trackDetails);
-    // console.log(await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`));
+    console.log('Track details:', trackDetails);
+    console.log("currently playing: ", await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`));
 
     return { album, releaseDate, trackDetails };
 }
 
-const releaseDateObserver = new MutationObserver((mutationsList, observer) => {
-    // Look through all mutations that just occured
-    for (let mutation of mutationsList) {
-        // If the addedNodes property has one or more nodes
-        if (mutation.addedNodes.length) {
-            // Check if the first added node is an element node
-            if (mutation.addedNodes[0].nodeType === Node.ELEMENT_NODE) {
-                const spicetifyLoaded = mutation.addedNodes[0].querySelector('.main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced');
-                if (spicetifyLoaded) {
-                    initializeRD(ReleaseDatestyle);
-                    observer.disconnect();  // Stop observing
-                    break;
-                }
-            }
-        }
-    }
-});
-// Start the script
-releaseDateObserver.observe(document, { childList: true, subtree: true });
+
+// Start after 3 seconds to ensure it starts even on slower devices
+setTimeout(() => initializeRD(ReleaseDateStyle), 3000);
 
 
 // Wait for spicetify to load initially
