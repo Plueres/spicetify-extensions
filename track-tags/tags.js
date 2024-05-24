@@ -20,7 +20,7 @@ async function getTrackDetails_tags() {
     let savedTrack = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`);
     let downloadedSongs = await Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length)
 
-    // console.log("Currently playing ", trackDetails);
+    console.log("Currently playing ", trackDetails);
 
     return { trackDetails, savedTrack, downloadedSongs };
 }
@@ -89,6 +89,39 @@ async function displayTags() {
             }
         });
 
+        // Check if the song is saved to liked songs collection
+        if (savedTrack[0]) {
+            // Create a new span element
+            const savedTrackSpan = document.createElement('span');
+
+            // Set the class of the span
+            savedTrackSpan.setAttribute('class', 'Wrapper-sm-only Wrapper-small-only');
+
+            // Create a new svg element
+            const savedTrackSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
+            // Set the attributes of the svg
+            savedTrackSvg.setAttribute('role', 'img');
+            savedTrackSvg.setAttribute('height', '24');
+            savedTrackSvg.setAttribute('width', '24');
+            savedTrackSvg.setAttribute('viewBox', '0 0 24 24');
+            savedTrackSvg.setAttribute('class', 'Svg-img-icon-small-textBrightAccent playing-heart-tag');
+
+            // Create a new path element
+            const savedTrackPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+
+            // Set the d attribute of the path
+            savedTrackPath.setAttribute('d', 'M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z');
+
+            // Append the path to the svg
+            savedTrackSvg.appendChild(savedTrackPath);
+
+            // Append the svg to the span
+            savedTrackSpan.appendChild(savedTrackSvg);
+
+            // Append the span to the div
+            tagsDiv.appendChild(savedTrackSpan);
+        }
         // Check if the song is downloaded
         if (downloaded) {
             // Create a new span element
@@ -129,38 +162,7 @@ async function displayTags() {
             // Append the span to the div
             tagsDiv.appendChild(explicitTag);
         }
-        if (savedTrack[0]) {
-            // Create a new span element
-            const savedTrackSpan = document.createElement('span');
 
-            // Set the class of the span
-            savedTrackSpan.setAttribute('class', 'Wrapper-sm-only Wrapper-small-only');
-
-            // Create a new svg element
-            const savedTrackSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-
-            // Set the attributes of the svg
-            savedTrackSvg.setAttribute('role', 'img');
-            savedTrackSvg.setAttribute('height', '24');
-            savedTrackSvg.setAttribute('width', '24');
-            savedTrackSvg.setAttribute('viewBox', '0 0 24 24');
-            savedTrackSvg.setAttribute('class', 'Svg-img-icon-small-textBrightAccent playing-heart-tag');
-
-            // Create a new path element
-            const savedTrackPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-
-            // Set the d attribute of the path
-            savedTrackPath.setAttribute('d', 'M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z');
-
-            // Append the path to the svg
-            savedTrackSvg.appendChild(savedTrackPath);
-
-            // Append the svg to the span
-            savedTrackSpan.appendChild(savedTrackSvg);
-
-            // Append the span to the div
-            tagsDiv.appendChild(savedTrackSpan);
-        }
         // Append the div to Tagslist          
         if (downloaded || trackDetails.explicit || savedTrack[0]) Tagslist.prepend(tagsDiv);
 
