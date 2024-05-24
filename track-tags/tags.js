@@ -29,6 +29,7 @@ async function getTrackDetails_tags() {
 // Start after 3 seconds to ensure it starts even on slower devices
 setTimeout(() => initializeTags(tagStyle), 3000);
 
+
 // Wait for spicetify to load initially
 async function waitForSpicetify() {
     while (!Spicetify || !Spicetify.showNotification) {
