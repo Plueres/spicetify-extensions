@@ -89,6 +89,7 @@ ReleaseDatestyle.innerHTML = `
     /* padding for readability */
     #releaseDate {
         padding-left: 8px;
+        margin-right: 8px;
     }
     /*
     .main-trackInfo-artists #releaseDate p:contains("•") {
@@ -160,8 +161,14 @@ async function initializeRD(styleElement) {
         Spicetify.Player.addEventListener("songchange", async () => {
             // Remove the existing release date element immediately when the song changes
             removeExistingReleaseDateElement();
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(async () => { await displayReleaseDate(); }, 3000);
+            // If there's no pending displayReleaseDate call, set a new timeout
+            if (!debounceTimer) {
+                debounceTimer = setTimeout(async () => {
+                    await displayReleaseDate();
+                    // Clear the timeout after displayReleaseDate has been called
+                    debounceTimer = null;
+                }, 3000);
+            }
         });
         Spicetify.Player.dispatchEvent(new Event('songchange'));
     } catch (error) {
