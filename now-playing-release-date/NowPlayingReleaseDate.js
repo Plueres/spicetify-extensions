@@ -100,6 +100,11 @@ ReleaseDateStyle.innerHTML = `
         margin-right: -8px;
     }
     `;
+if (operatingSystem !== 'Windows') {
+    ReleaseDateStyle.innerHTML += `
+        /* Add your additional CSS rules here */
+    `;
+}
 
 // Default settings if none are found
 //* remove the ! if you are testing, and/or the settings are set wrong in the localStorage
@@ -138,23 +143,22 @@ async function waitForSpicetify() {
 }
 
 async function initializeRD(styleElement) {
+    let operatingSystem = await Spicetify.Platform.operatingSystem();
     try {
         await waitForSpicetify();
         // Debounce the song change event to prevent multiple calls
         let debounceTimer;
-        Spicetify.Player.addEventListener("songchange", async () => {
+        Spicetify.Player.addEventListener("songchange", () => {
             // Remove the existing release date element immediately when the song changes
             removeExistingReleaseDateElement();
-            // If there's no pending displayReleaseDate call, set a new timeout
-            if (!debounceTimer) {
-                debounceTimer = setTimeout(async () => {
-                    await displayReleaseDate();
-                    // Clear the timeout after displayReleaseDate has been called
-                    debounceTimer = null;
-                }, 3000);
-            }
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(displayReleaseDate, 3000);
         });
-        Spicetify.Player.dispatchEvent(new Event('songchange'));
+        if (operatingSystem === 'Windows') {
+            Spicetify.Player.dispatchEvent(new Event('songchange'));
+        } else {
+            displayReleaseDate();
+        }
     } catch (error) {
         console.error('Error initializing: ', error, "\nCreate a new issue on the github repo to get this resolved");
     }

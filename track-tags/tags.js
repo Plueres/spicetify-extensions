@@ -20,9 +20,10 @@ async function getTrackDetails_tags() {
     let savedTrack = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`);
     let downloadedSongs = await Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length)
 
+
     console.log("Currently playing ", trackDetails);
 
-    return { trackDetails, savedTrack, downloadedSongs };
+    return { trackDetails, savedTrack, downloadedSongs, operatingSystem };
 }
 
 
@@ -37,6 +38,7 @@ async function waitForSpicetify() {
     }
 }
 async function initializeTags(styleElement) {
+    let operatingSystem = await Spicetify.Platform.operatingSystem();
     try {
         await waitForSpicetify();
         // Debounce the song change event to prevent multiple calls
@@ -47,7 +49,11 @@ async function initializeTags(styleElement) {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(displayTags, 3000);
         });
-        Spicetify.Player.dispatchEvent(new Event('songchange'));
+        if (operatingSystem === 'Windows') {
+            Spicetify.Player.dispatchEvent(new Event('songchange'));
+        } else {
+            displayTags();
+        }
     } catch (error) {
         console.error('Error initializing: ', error, "\nCreate a new issue on the github repo to get this resolved");
     }
