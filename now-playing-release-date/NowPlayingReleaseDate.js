@@ -100,6 +100,8 @@ ReleaseDateStyle.innerHTML = `
         margin-right: -8px;
     }
     `;
+
+const { operatingSystem } = getTrackDetailsRD();
 if (operatingSystem !== 'Windows') {
     ReleaseDateStyle.innerHTML += `
         #releaseDate {
@@ -126,17 +128,18 @@ async function getTrackDetailsRD() {
     let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
     let album = trackDetails.album;
     let releaseDate = new Date(trackDetails.album.release_date);
+    let operatingSystem = await Spicetify.Platform.operatingSystem();
     //? Uncomment the line below to see the track details in the console
     console.log('Track details:', trackDetails);
     console.log("currently playing: ", await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`));
 
-    return { album, releaseDate, trackDetails };
+    return { album, releaseDate, trackDetails, operatingSystem };
 }
 
 
 // Start after 1 seconds to ensure it starts even on slower devices
 document.addEventListener('DOMContentLoaded', (event) => {
-    setTimeout(() => initializeTags(ReleaseDateStyle), 1000);
+    setTimeout(() => initializeTags(ReleaseDateStyle), 3000);
 });
 
 
@@ -147,7 +150,7 @@ async function waitForSpicetify() {
     }
 }
 async function initializeRD(styleElement) {
-    let operatingSystem = await Spicetify.Platform.operatingSystem();
+    const { operatingSystem } = await getTrackDetails_tags();
     try {
         await waitForSpicetify();
         // Debounce the song change event to prevent multiple calls

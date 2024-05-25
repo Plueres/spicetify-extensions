@@ -19,16 +19,17 @@ async function getTrackDetails_tags() {
     let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
     let savedTrack = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`);
     let downloadedSongs = await Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length)
+    let operatingSystem = await Spicetify.Platform.operatingSystem();
 
     console.log("Currently playing ", trackDetails);
 
-    return { trackDetails, savedTrack, downloadedSongs };
+    return { trackDetails, savedTrack, downloadedSongs, operatingSystem };
 }
 
 
 // Start after 1 seconds to ensure it starts even on slower devices
 document.addEventListener('DOMContentLoaded', (event) => {
-    setTimeout(() => initializeTags(tagStyle), 1000);
+    setTimeout(() => initializeTags(tagStyle), 3000);
 });
 
 
@@ -39,7 +40,7 @@ async function waitForSpicetify() {
     }
 }
 async function initializeTags(styleElement) {
-    let operatingSystem = await Spicetify.Platform.operatingSystem();
+    const { operatingSystem } = await getTrackDetails_tags();
     try {
         await waitForSpicetify();
         // Debounce the song change event to prevent multiple calls
