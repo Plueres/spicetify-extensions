@@ -16,99 +16,104 @@ const separator = [
     { value: "-", text: "Dash" }
 ]
 
-const ReleaseDateStyle = document.createElement('style');
-ReleaseDateStyle.innerHTML = `
-    #settingsMenu {
-        display: none;
-        position: absolute;
-        background-color: var(--spice-player);
-        padding: 16px;
-        margin: 24px 0;
-        border-radius: 12px;
-        flex-direction: column;
-        min-width: 16vw;
-        max-width: 20vw;
-    }
-    #settingsMenu h2, #settingsMenu #optionsDiv, #settingsMenu a {
-        padding: 10px;
-    }
-    #optionsDiv {
-        display: flex;
-        flex-direction: column;
-    }
-    #settingsMenu a {
-        display: flex;
-        align-items: center;
-        max-width: 100%;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-    }
-    #settingsMenu a:hover {
-        color: var(--text-bright-accent, #117a37);
-    }
-    .Dropdown-container {
-        overflow: visible; 
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 10px;
-        gap: 10px;
-    }
-    .releaseDateDropdown-control {
-        flex-grow: 1;
-        display: inline;
-        justify-content: space-between;
-        border: 1px solid #ccc;
-        padding: 5px;
-        cursor: pointer;
-        min-width: fit-content;
-        max-width: 10rem;
-    }
-    .Dropdown-optionsList {
-        position: fixed;
-        background-color:  var(--spice-player);
-        z-index: 1;
-    }
-    .Dropdown-option {
-        padding: 5px;
-        cursor: pointer;
-    }
-    .Dropdown-option:hover {
-        background-color: #f0f0f0;
-    }
-    
-    /* spacing and inline alignment */
-    .main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-artists,
-    .main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-name,
-    #releaseDate {
-        display: flex;
-        gap: 3px;
-        white-space: nowrap;
-    }
-    /* padding for readability */
-    #releaseDate {
-        padding-left: 8px;
-        margin-right: 8px;
-    }
-    /*
-    .main-trackInfo-artists #releaseDate p:contains("•") {
-        transform: translateY(-1px);
-    }
-    */
-    .main-trackInfo-overlay {
-        margin-right: -8px;
-    }
-    `;
+async function releaseDateCSS() {
+    await waitForSpicetify();
+    const { operatingSystem } = await getTrackDetailsRD();
 
-const { operatingSystem } = getTrackDetailsRD();
-if (operatingSystem !== 'Windows') {
-    ReleaseDateStyle.innerHTML += `
+    // Create CSS
+    const ReleaseDateStyle = document.createElement('style');
+    ReleaseDateStyle.innerHTML = `
+        #settingsMenu {
+            display: none;
+            position: absolute;
+            background-color: var(--spice-player);
+            padding: 16px;
+            margin: 24px 0;
+            border-radius: 12px;
+            flex-direction: column;
+            min-width: 16vw;
+            max-width: 20vw;
+        }
+        #settingsMenu h2, #settingsMenu #optionsDiv, #settingsMenu a {
+            padding: 10px;
+        }
+        #optionsDiv {
+            display: flex;
+            flex-direction: column;
+        }
+        #settingsMenu a {
+            display: flex;
+            align-items: center;
+            max-width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        #settingsMenu a:hover {
+            color: var(--text-bright-accent, #117a37);
+        }
+        .Dropdown-container {
+            overflow: visible; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            gap: 10px;
+        }
+        .releaseDateDropdown-control {
+            flex-grow: 1;
+            display: inline;
+            justify-content: space-between;
+            border: 1px solid #ccc;
+            padding: 5px;
+            cursor: pointer;
+            min-width: fit-content;
+            max-width: 10rem;
+        }
+        .Dropdown-optionsList {
+            position: fixed;
+            background-color:  var(--spice-player);
+            z-index: 1;
+        }
+        .Dropdown-option {
+            padding: 5px;
+            cursor: pointer;
+        }
+        .Dropdown-option:hover {
+            background-color: #f0f0f0;
+        }
+        
+        /* spacing and inline alignment */
+        .main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-artists,
+        .main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-name,
         #releaseDate {
-            margin-left: -4px;
-            padding-left: 0;
+            display: flex;
+            gap: 3px;
+            white-space: nowrap;
+        }
+        /* padding for readability */
+        #releaseDate {
+            padding-left: 8px;
+            margin-right: 8px;
+        }
+        /*
+        .main-trackInfo-artists #releaseDate p:contains("•") {
+            transform: translateY(-1px);
+        }
+        */
+        .main-trackInfo-overlay {
+            margin-right: -8px;
         }
     `;
+    if (operatingSystem === 'Linux') {
+        ReleaseDateStyle.innerHTML += `
+            #releaseDate {
+                margin-left: -4px;
+                padding-left: 0;
+            }
+        `;
+    }
+    return ReleaseDateStyle;
 }
 
 // Default settings if none are found
@@ -122,24 +127,24 @@ if (!localStorage.getItem('position')) {
     localStorage.setItem('position', positions[1].value);
 }
 
-// Get the track details from the Spotify API
+// Get the details from the Spotify API
 async function getTrackDetailsRD() {
-    let trackId = Spicetify.Player.data.item.uri.split(":")[2];
-    let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
-    let album = trackDetails.album;
-    let releaseDate = new Date(trackDetails.album.release_date);
-    let operatingSystem = await Spicetify.Platform.operatingSystem();
-    //? Uncomment the line below to see the track details in the console
-    console.log('Track details:', trackDetails);
-    console.log("currently playing: ", await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`));
+    let currentlyPlaying = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`);
+    let album = currentlyPlaying.item.album;
+    let releaseDate = new Date(currentlyPlaying.item.album.release_date);
+    let operatingSystem = await Spicetify.Platform.operatingSystem;
 
-    return { album, releaseDate, trackDetails, operatingSystem };
+    //? Uncomment the line below to see the track details in the console
+    // console.log('currently playing:', currentlyPlaying);
+
+    return { currentlyPlaying, album, releaseDate, operatingSystem };
 }
 
 
-// Start after 1 seconds to ensure it starts even on slower devices
+// Start after 3 seconds to ensure it starts even on slower devices
 document.addEventListener('DOMContentLoaded', (event) => {
-    setTimeout(() => initializeTags(ReleaseDateStyle), 3000);
+    //* Initialize
+    setTimeout(() => initializeRD(), 3000);
 });
 
 
@@ -149,29 +154,49 @@ async function waitForSpicetify() {
         await new Promise(resolve => setTimeout(resolve, 100));
     }
 }
-async function initializeRD(styleElement) {
-    const { operatingSystem } = await getTrackDetails_tags();
+
+async function initializeRD() {
     try {
         await waitForSpicetify();
+        const operatingSystem = await getTrackDetailsRD();
+
         // Debounce the song change event to prevent multiple calls
         let debounceTimer;
-        Spicetify.Player.addEventListener("songchange", () => {
-            // Remove the existing release date element immediately when the song changes
-            removeExistingReleaseDateElement();
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(displayReleaseDate, 3000);
-        });
-        if (operatingSystem === 'Windows') {
+        if (operatingSystem === "Windows") {
+            Spicetify.Player.addEventListener("songchange", async () => {
+                // Remove the existing release date element immediately when the song changes
+                removeExistingReleaseDateElement();
+                // If there's no pending displayReleaseDate call, set a new timeout
+                if (!debounceTimer) {
+                    debounceTimer = setTimeout(async () => {
+                        await displayReleaseDate();
+                        // Clear the timeout after displayReleaseDate has been called
+                        debounceTimer = null;
+                    }, 3000);
+                }
+            });
             Spicetify.Player.dispatchEvent(new Event('songchange'));
         } else {
-            displayReleaseDate();
+            await displayReleaseDate();
+            Spicetify.Player.addEventListener("songchange", async () => {
+                // Remove the existing release date element immediately when the song changes
+                removeExistingReleaseDateElement();
+                // If there's no pending displayReleaseDate call, set a new timeout
+                if (!debounceTimer) {
+                    debounceTimer = setTimeout(async () => {
+                        await displayReleaseDate();
+                        // Clear the timeout after displayReleaseDate has been called
+                        debounceTimer = null;
+                    }, 100);
+                }
+            });
         }
+
+        // Add the style element to the head of the document
+        document.head.appendChild(await releaseDateCSS());
     } catch (error) {
         console.error('Error initializing: ', error, "\nCreate a new issue on the github repo to get this resolved");
     }
-
-    // Add the style element to the head of the document
-    document.head.appendChild(styleElement);
 }
 
 async function displayReleaseDate() {

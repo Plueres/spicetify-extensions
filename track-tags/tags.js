@@ -1,17 +1,21 @@
 console.log('tags loaded');
 
-// CSS styles
-const tagStyle = document.createElement('style');
-tagStyle.innerHTML = `
-.main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced {
-        align-items: center;
-    }
-.playing-tags {
-    display: flex;
-    gap: 3px;
-    min-width: 0;
-}
+async function tagCSS() {
+    // CSS styles
+    const tagStyle = document.createElement('style');
+    tagStyle.innerHTML = `
+        .main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced {
+                align-items: center;
+            }
+        .playing-tags {
+            display: flex;
+            gap: 3px;
+            min-width: 0;
+        }
     `;
+    return tagStyle;
+}
+
 
 // Get the track details from the Spotify API
 async function getTrackDetailsTags() {
@@ -19,9 +23,11 @@ async function getTrackDetailsTags() {
     let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
     let savedTrack = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`);
     let downloadedSongs = await Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length)
+    let currentlyPlaying = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`);
     let operatingSystem = await Spicetify.Platform.operatingSystem;
 
-    console.log("Currently playing ", trackDetails);
+    // console.log("TrackDetails ", trackDetails);
+    console.log("Currently playing ", currentlyPlaying);
 
     return { trackDetails, savedTrack, downloadedSongs, operatingSystem };
 }
@@ -29,9 +35,8 @@ async function getTrackDetailsTags() {
 
 // Start after 3 seconds to ensure it starts even on slower devices
 document.addEventListener('DOMContentLoaded', (event) => {
-    setTimeout(() => initializeTags(tagStyle), 3000);
+    setTimeout(() => initializeTags(), 3000);
 });
-
 
 // Wait for spicetify to load initially
 async function waitForSpicetify() {
@@ -39,30 +44,49 @@ async function waitForSpicetify() {
         await new Promise(resolve => setTimeout(resolve, 100));
     }
 }
-async function initializeTags(styleElement) {
-    const { operatingSystem } = await getTrackDetailsTags();
+async function initializeTags() {
     try {
         await waitForSpicetify();
+        const operatingSystem = await getTrackDetailsTags();
+
         // Debounce the song change event to prevent multiple calls
         let debounceTimer;
-        Spicetify.Player.addEventListener("songchange", () => {
-            // Remove the existing release date element immediately when the song changes
-            removeExistingTagElement();
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(displayTags, 1000);
-        });
-        if (operatingSystem === 'Windows') {
+        if (operatingSystem === "Windows") {
+            Spicetify.Player.addEventListener("songchange", async () => {
+                // Remove the existing release date element immediately when the song changes
+                removeExistingTagElement();
+                // If there's no pending displayReleaseDate call, set a new timeout
+                if (!debounceTimer) {
+                    debounceTimer = setTimeout(async () => {
+                        await displayTags();
+                        // Clear the timeout after displayReleaseDate has been called
+                        debounceTimer = null;
+                    }, 3000);
+                }
+            });
             Spicetify.Player.dispatchEvent(new Event('songchange'));
         } else {
-            removeExistingTagElement();
-            displayTags();
+            await displayTags();
+            Spicetify.Player.addEventListener("songchange", async () => {
+                // Remove the existing release date element immediately when the song changes
+                removeExistingTagElement();
+                // If there's no pending displayReleaseDate call, set a new timeout
+                if (!debounceTimer) {
+                    debounceTimer = setTimeout(async () => {
+                        await displayTags();
+                        // Clear the timeout after displayReleaseDate has been called
+                        debounceTimer = null;
+                    }, 100);
+                }
+            });
         }
+
+        // Add the style element to the head of the document
+        document.head.appendChild(await tagCSS());
     } catch (error) {
-        console.error('Error initializing: ', error, "\nCreate a new issue on the github repo to get this resolved");
+        console.log(error);
     }
 
-    // Add the style element to the head of the document
-    document.head.appendChild(styleElement);
 }
 
 async function displayTags() {
