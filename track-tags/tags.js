@@ -16,18 +16,20 @@ async function tagCSS() {
     return tagStyle;
 }
 
-
 // Get the track details from the Spotify API
 async function getTrackDetailsTags() {
     let trackId = Spicetify.Player.data.item.uri.split(":")[2];
     let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
+    //? only use this when a track is actually playing, not paused
+    // let currentlyPlaying = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`);
+
     let savedTrack = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`);
-    let downloadedSongs = await Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length)
-    let currentlyPlaying = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`);
+    let downloadedSongs = await Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length);
+
     let operatingSystem = await Spicetify.Platform.operatingSystem;
 
     // console.log("TrackDetails ", trackDetails);
-    console.log("Currently playing ", currentlyPlaying);
+    // console.log("Currently playing ", currentlyPlaying);
 
     return { trackDetails, savedTrack, downloadedSongs, operatingSystem };
 }
@@ -37,6 +39,7 @@ async function getTrackDetailsTags() {
 document.addEventListener('DOMContentLoaded', (event) => {
     setTimeout(() => initializeTags(), 3000);
 });
+
 
 // Wait for spicetify to load initially
 async function waitForSpicetify() {
@@ -52,41 +55,28 @@ async function initializeTags() {
         // Debounce the song change event to prevent multiple calls
         let debounceTimer;
         if (operatingSystem === "Windows") {
-            Spicetify.Player.addEventListener("songchange", async () => {
-                // Remove the existing release date element immediately when the song changes
-                removeExistingTagElement();
-                // If there's no pending displayReleaseDate call, set a new timeout
-                if (!debounceTimer) {
-                    debounceTimer = setTimeout(async () => {
-                        await displayTags();
-                        // Clear the timeout after displayReleaseDate has been called
-                        debounceTimer = null;
-                    }, 3000);
-                }
-            });
             Spicetify.Player.dispatchEvent(new Event('songchange'));
         } else {
             await displayTags();
-            Spicetify.Player.addEventListener("songchange", async () => {
-                // Remove the existing release date element immediately when the song changes
-                removeExistingTagElement();
-                // If there's no pending displayReleaseDate call, set a new timeout
-                if (!debounceTimer) {
-                    debounceTimer = setTimeout(async () => {
-                        await displayTags();
-                        // Clear the timeout after displayReleaseDate has been called
-                        debounceTimer = null;
-                    }, 100);
-                }
-            });
         }
+        Spicetify.Player.addEventListener("songchange", async () => {
+            // Remove the existing release date element immediately when the song changes
+            removeExistingTagElement();
+            // If there's no pending displayReleaseDate call, set a new timeout
+            if (!debounceTimer) {
+                debounceTimer = setTimeout(async () => {
+                    await displayTags();
+                    // Clear the timeout after displayReleaseDate has been called
+                    debounceTimer = null;
+                }, 100);
+            }
+        });
 
         // Add the style element to the head of the document
         document.head.appendChild(await tagCSS());
     } catch (error) {
-        console.log(error);
+        console.error('Error initializing: ', error, "\nCreate a new issue on the github repo to get this resolved");
     }
-
 }
 
 async function displayTags() {
@@ -183,7 +173,6 @@ async function displayTags() {
 
         // Append the div to Tagslist          
         if (downloaded || trackDetails.explicit || savedTrack[0]) Tagslist.prepend(tagsDiv);
-
     } catch (error) {
         console.error('Error displaying tags: ', error);
     }

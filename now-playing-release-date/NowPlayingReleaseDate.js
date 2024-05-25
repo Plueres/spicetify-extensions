@@ -1,6 +1,5 @@
 console.log('Now Playing Release Date loaded');
 
-
 // This is where the settings for the Positions, Date formats and separator style are located
 const positions = [
     { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-artists", text: "Artist" },
@@ -129,15 +128,20 @@ if (!localStorage.getItem('position')) {
 
 // Get the details from the Spotify API
 async function getTrackDetailsRD() {
-    let currentlyPlaying = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`);
-    let album = currentlyPlaying.item.album;
-    let releaseDate = new Date(currentlyPlaying.item.album.release_date);
+    let trackId = Spicetify.Player.data.item.uri.split(":")[2];
+    let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
+    //? only use this when a track is actually playing, not paused
+    // let currentlyPlaying = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`);
+
+    let album = trackDetails.album;
+    let releaseDate = new Date(trackDetails.album.release_date);
     let operatingSystem = await Spicetify.Platform.operatingSystem;
 
     //? Uncomment the line below to see the track details in the console
     // console.log('currently playing:', currentlyPlaying);
+    // console.log('currently track:', trackDetails);
 
-    return { currentlyPlaying, album, releaseDate, operatingSystem };
+    return { trackDetails, album, releaseDate, operatingSystem };
 }
 
 
@@ -154,7 +158,6 @@ async function waitForSpicetify() {
         await new Promise(resolve => setTimeout(resolve, 100));
     }
 }
-
 async function initializeRD() {
     try {
         await waitForSpicetify();
@@ -163,34 +166,22 @@ async function initializeRD() {
         // Debounce the song change event to prevent multiple calls
         let debounceTimer;
         if (operatingSystem === "Windows") {
-            Spicetify.Player.addEventListener("songchange", async () => {
-                // Remove the existing release date element immediately when the song changes
-                removeExistingReleaseDateElement();
-                // If there's no pending displayReleaseDate call, set a new timeout
-                if (!debounceTimer) {
-                    debounceTimer = setTimeout(async () => {
-                        await displayReleaseDate();
-                        // Clear the timeout after displayReleaseDate has been called
-                        debounceTimer = null;
-                    }, 3000);
-                }
-            });
             Spicetify.Player.dispatchEvent(new Event('songchange'));
         } else {
             await displayReleaseDate();
-            Spicetify.Player.addEventListener("songchange", async () => {
-                // Remove the existing release date element immediately when the song changes
-                removeExistingReleaseDateElement();
-                // If there's no pending displayReleaseDate call, set a new timeout
-                if (!debounceTimer) {
-                    debounceTimer = setTimeout(async () => {
-                        await displayReleaseDate();
-                        // Clear the timeout after displayReleaseDate has been called
-                        debounceTimer = null;
-                    }, 100);
-                }
-            });
         }
+        Spicetify.Player.addEventListener("songchange", async () => {
+            // Remove the existing release date element immediately when the song changes
+            removeExistingReleaseDateElement();
+            // If there's no pending displayReleaseDate call, set a new timeout
+            if (!debounceTimer) {
+                debounceTimer = setTimeout(async () => {
+                    await displayReleaseDate();
+                    // Clear the timeout after displayReleaseDate has been called
+                    debounceTimer = null;
+                }, 100);
+            }
+        });
 
         // Add the style element to the head of the document
         document.head.appendChild(await releaseDateCSS());
