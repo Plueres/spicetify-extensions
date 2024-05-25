@@ -20,15 +20,16 @@ async function getTrackDetails_tags() {
     let savedTrack = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`);
     let downloadedSongs = await Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length)
 
-
     console.log("Currently playing ", trackDetails);
 
-    return { trackDetails, savedTrack, downloadedSongs, operatingSystem };
+    return { trackDetails, savedTrack, downloadedSongs };
 }
 
 
-// Start after 3 seconds to ensure it starts even on slower devices
-setTimeout(() => initializeTags(tagStyle), 3000);
+// Start after 1 seconds to ensure it starts even on slower devices
+document.addEventListener('DOMContentLoaded', (event) => {
+    setTimeout(() => initializeTags(tagStyle), 1000);
+});
 
 
 // Wait for spicetify to load initially

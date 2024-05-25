@@ -102,7 +102,10 @@ ReleaseDateStyle.innerHTML = `
     `;
 if (operatingSystem !== 'Windows') {
     ReleaseDateStyle.innerHTML += `
-        /* Add your additional CSS rules here */
+        #releaseDate {
+            margin-left: -4px;
+            padding-left: 0;
+        }
     `;
 }
 
@@ -131,8 +134,10 @@ async function getTrackDetailsRD() {
 }
 
 
-// Start after 3 seconds to ensure it starts even on slower devices
-setTimeout(() => initializeRD(ReleaseDateStyle), 3000);
+// Start after 1 seconds to ensure it starts even on slower devices
+document.addEventListener('DOMContentLoaded', (event) => {
+    setTimeout(() => initializeTags(ReleaseDateStyle), 1000);
+});
 
 
 // Wait for spicetify to load initially
@@ -141,7 +146,6 @@ async function waitForSpicetify() {
         await new Promise(resolve => setTimeout(resolve, 100));
     }
 }
-
 async function initializeRD(styleElement) {
     let operatingSystem = await Spicetify.Platform.operatingSystem();
     try {
