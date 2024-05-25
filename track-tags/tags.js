@@ -14,12 +14,12 @@ tagStyle.innerHTML = `
     `;
 
 // Get the track details from the Spotify API
-async function getTrackDetails_tags() {
+async function getTrackDetailsTags() {
     let trackId = Spicetify.Player.data.item.uri.split(":")[2];
     let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
     let savedTrack = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`);
     let downloadedSongs = await Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length)
-    let operatingSystem = await Spicetify.Platform.operatingSystem();
+    let operatingSystem = await Spicetify.Platform.operatingSystem;
 
     console.log("Currently playing ", trackDetails);
 
@@ -27,7 +27,7 @@ async function getTrackDetails_tags() {
 }
 
 
-// Start after 1 seconds to ensure it starts even on slower devices
+// Start after 3 seconds to ensure it starts even on slower devices
 document.addEventListener('DOMContentLoaded', (event) => {
     setTimeout(() => initializeTags(tagStyle), 3000);
 });
@@ -40,7 +40,7 @@ async function waitForSpicetify() {
     }
 }
 async function initializeTags(styleElement) {
-    const { operatingSystem } = await getTrackDetails_tags();
+    const { operatingSystem } = await getTrackDetailsTags();
     try {
         await waitForSpicetify();
         // Debounce the song change event to prevent multiple calls
@@ -49,11 +49,12 @@ async function initializeTags(styleElement) {
             // Remove the existing release date element immediately when the song changes
             removeExistingTagElement();
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(displayTags, 3000);
+            debounceTimer = setTimeout(displayTags, 1000);
         });
         if (operatingSystem === 'Windows') {
             Spicetify.Player.dispatchEvent(new Event('songchange'));
         } else {
+            removeExistingTagElement();
             displayTags();
         }
     } catch (error) {
@@ -67,7 +68,7 @@ async function initializeTags(styleElement) {
 async function displayTags() {
     let downloaded = false;
     try {
-        const { trackDetails, savedTrack, downloadedSongs } = await getTrackDetails_tags();
+        const { trackDetails, savedTrack, downloadedSongs } = await getTrackDetailsTags();
 
         // Get the artist name list element
         const Tagslist = document.querySelector('.main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced');
