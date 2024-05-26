@@ -145,11 +145,17 @@ async function getTrackDetailsRD() {
 }
 
 
-// Start after 3 seconds to ensure it starts even on slower devices
-document.addEventListener('DOMContentLoaded', (event) => {
-    //* Initialize
+//* Initialize
+const operatingSystem = await getTrackDetailsTags();
+if (operatingSystem === "Windows") {
+    // Start after 3 seconds to ensure it starts even on slower devices
     setTimeout(() => initializeRD(), 3000);
-});
+} else {
+    // Start after 3 seconds to ensure it starts even on slower devices
+    document.addEventListener('DOMContentLoaded', (event) => {
+        setTimeout(() => initializeRD(), 3000);
+    });
+}
 
 
 // Wait for spicetify to load initially
