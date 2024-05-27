@@ -146,7 +146,7 @@ async function getTrackDetailsRD() {
 
 
 //* Initialize
-const operatingSystem = getTrackDetailsTags();
+const operatingSystem = getTrackDetailsRD();
 if (operatingSystem === "Windows") {
     // Start after 3 seconds to ensure it starts even on slower devices
     setTimeout(() => initializeRD(), 3000);
