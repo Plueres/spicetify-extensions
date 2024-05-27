@@ -151,7 +151,7 @@ if (operatingSystem === "Windows") {
     // Start after 3 seconds to ensure it starts even on slower devices
     setTimeout(() => initializeRD(), 3000);
 } else {
-    // Start after 3 seconds to ensure it starts even on slower devices
+    // Start after 5 seconds to ensure it starts even on slower devices
     document.addEventListener('DOMContentLoaded', (event) => {
         setTimeout(() => initializeRD(), 3000);
     });
