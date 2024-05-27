@@ -36,7 +36,7 @@ async function getTrackDetailsTags() {
 
 
 //* Initialize
-const operatingSystem = await getTrackDetailsTags();
+const operatingSystem = getTrackDetailsTags();
 if (operatingSystem === "Windows") {
     // Start after 3 seconds to ensure it starts even on slower devices
     setTimeout(() => initializeTags(), 3000);
