@@ -144,9 +144,6 @@ async function releaseDateCSS() {
                 margin-left: -4px;
                 padding-left: 0;
             }
-            .main-trackInfo-artists #releaseDate p:contains("•") {
-                transform: translateY(-1px);
-            }
         `;
     }
     return ReleaseDateStyle;
