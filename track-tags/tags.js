@@ -1,11 +1,20 @@
 console.log('tags loaded');
 
-window.operatingSystem = window.operatingSystem || null;
+// Wait for spicetify to load initially
+async function waitForSpicetify() {
+    while (!Spicetify || !Spicetify.showNotification) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+}
+// Wait for the track data to load
 async function waitForTrackData() {
     while (!Spicetify.Player.data || !Spicetify.Player.data.item) {
         await new Promise(resolve => setTimeout(resolve, 100));
     }
 }
+
+// Set global operating system variable
+window.operatingSystem = window.operatingSystem || null;
 (async function () {
     await waitForTrackData();
     if (window.operatingSystem == null) {
@@ -63,12 +72,6 @@ if (window.operatingSystem === "Windows") {
 }
 
 
-// Wait for spicetify to load initially
-async function waitForSpicetify() {
-    while (!Spicetify || !Spicetify.showNotification) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
-}
 async function initializeTags() {
     try {
         await waitForSpicetify();
