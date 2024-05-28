@@ -1,4 +1,18 @@
-console.log('tags loaded');
+console.log('Track Tags loaded');
+
+window.operatingSystem = window.operatingSystem || null;
+async function waitForTrackData() {
+    while (!Spicetify.Player.data || !Spicetify.Player.data.item) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+}
+(async function () {
+    await waitForTrackData();
+    if (window.operatingSystem == null) {
+        let details = await getTrackDetailsTags();
+        window.operatingSystem = details.operatingSystem;
+    }
+})();
 
 async function tagCSS() {
     // CSS styles
@@ -36,8 +50,8 @@ async function getTrackDetailsTags() {
 
 
 //* Initialize
-const operatingSystem = getTrackDetailsTags();
-if (operatingSystem === "Windows") {
+
+if (window.operatingSystem === "Windows") {
     // Start after 3 seconds to ensure it starts even on slower devices
     setTimeout(() => initializeTags(), 3000);
 } else {
@@ -57,11 +71,10 @@ async function waitForSpicetify() {
 async function initializeTags() {
     try {
         await waitForSpicetify();
-        const operatingSystem = await getTrackDetailsTags();
 
         // Debounce the song change event to prevent multiple calls
         let debounceTimer;
-        if (operatingSystem === "Windows") {
+        if (window.operatingSystem === "Windows") {
             Spicetify.Player.dispatchEvent(new Event('songchange'));
         } else {
             await displayTags();

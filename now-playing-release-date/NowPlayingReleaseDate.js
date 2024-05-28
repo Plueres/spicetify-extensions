@@ -1,5 +1,19 @@
 console.log('Now Playing Release Date loaded');
 
+window.operatingSystem = window.operatingSystem || null;
+async function waitForTrackData() {
+    while (!Spicetify.Player.data || !Spicetify.Player.data.item) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+}
+(async function () {
+    await waitForTrackData();
+    if (window.operatingSystem == null) {
+        let details = await getTrackDetailsTags();
+        window.operatingSystem = details.operatingSystem;
+    }
+})();
+
 // This is where the settings for the Positions, Date formats and separator style are located
 const positions = [
     { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-artists", text: "Artist" },
@@ -17,7 +31,6 @@ const separator = [
 
 async function releaseDateCSS() {
     await waitForSpicetify();
-    const { operatingSystem } = await getTrackDetailsRD();
 
     // Create CSS
     const ReleaseDateStyle = document.createElement('style');
@@ -104,7 +117,7 @@ async function releaseDateCSS() {
             margin-right: -8px;
         }
     `;
-    if (operatingSystem === 'Linux') {
+    if (window.operatingSystem === 'Linux') {
         ReleaseDateStyle.innerHTML += `
             #releaseDate {
                 margin-left: -4px;
@@ -146,8 +159,7 @@ async function getTrackDetailsRD() {
 
 
 //* Initialize
-const operatingSystem = getTrackDetailsRD();
-if (operatingSystem === "Windows") {
+if (window.operatingSystem === "Windows") {
     // Start after 3 seconds to ensure it starts even on slower devices
     setTimeout(() => initializeRD(), 3000);
 } else {
@@ -167,11 +179,10 @@ async function waitForSpicetify() {
 async function initializeRD() {
     try {
         await waitForSpicetify();
-        const operatingSystem = await getTrackDetailsRD();
 
         // Debounce the song change event to prevent multiple calls
         let debounceTimer;
-        if (operatingSystem === "Windows") {
+        if (window.operatingSystem === "Windows") {
             Spicetify.Player.dispatchEvent(new Event('songchange'));
         } else {
             await displayReleaseDate();
