@@ -9,7 +9,7 @@ async function waitForTrackData() {
 (async function () {
     await waitForTrackData();
     if (window.operatingSystem == null) {
-        let details = await getTrackDetailsTags();
+        let details = await getTrackDetailsRD();
         window.operatingSystem = details.operatingSystem;
     }
 })();
