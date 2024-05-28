@@ -1,4 +1,4 @@
-console.log('Track Tags loaded');
+console.log('tags loaded');
 
 window.operatingSystem = window.operatingSystem || null;
 async function waitForTrackData() {
@@ -33,12 +33,13 @@ async function tagCSS() {
 // Get the track details from the Spotify API
 async function getTrackDetailsTags() {
     let trackId = Spicetify.Player.data.item.uri.split(":")[2];
-    let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
+    let [trackDetails, savedTrack, downloadedSongs] = await Promise.all([
+        Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`),
+        Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`),
+        Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length)
+    ]);
     //? only use this when a track is actually playing, not paused
     // let currentlyPlaying = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`);
-
-    let savedTrack = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`);
-    let downloadedSongs = await Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length);
 
     let operatingSystem = await Spicetify.Platform.operatingSystem;
 
@@ -55,9 +56,9 @@ if (window.operatingSystem === "Windows") {
     // Start after 3 seconds to ensure it starts even on slower devices
     setTimeout(() => initializeTags(), 3000);
 } else {
-    // Start after 5 seconds to ensure it starts even on slower devices
+    // Start after 3 seconds to ensure it starts even on slower devices
     document.addEventListener('DOMContentLoaded', (event) => {
-        setTimeout(() => initializeTags(), 5000);
+        setTimeout(() => initializeTags(), 3000);
     });
 }
 
@@ -88,7 +89,7 @@ async function initializeTags() {
                     await displayTags();
                     // Clear the timeout after displayReleaseDate has been called
                     debounceTimer = null;
-                }, 100);
+                }, 10);
             }
         });
 

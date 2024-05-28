@@ -163,7 +163,7 @@ if (window.operatingSystem === "Windows") {
     // Start after 3 seconds to ensure it starts even on slower devices
     setTimeout(() => initializeRD(), 3000);
 } else {
-    // Start after 5 seconds to ensure it starts even on slower devices
+    // Start after 3 seconds to ensure it starts even on slower devices
     document.addEventListener('DOMContentLoaded', (event) => {
         setTimeout(() => initializeRD(), 3000);
     });
@@ -196,7 +196,7 @@ async function initializeRD() {
                     await displayReleaseDate();
                     // Clear the timeout after displayReleaseDate has been called
                     debounceTimer = null;
-                }, 100);
+                }, 10);
             }
         });
 
@@ -235,7 +235,7 @@ async function displayReleaseDate() {
             const releaseDateElement = createReleaseDateElement(localStorage.getItem('separator'), formattedReleaseDate);
             const container = document.querySelector(localStorage.getItem('position'));
             container.appendChild(releaseDateElement);
-        }, 1000);
+        }, 10);
     } catch (error) {
         console.error('Error displaying release date:', error);
     }
