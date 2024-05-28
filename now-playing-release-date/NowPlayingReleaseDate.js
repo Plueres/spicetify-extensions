@@ -38,12 +38,26 @@ const separator = [
     { value: "-", text: "Dash" }
 ]
 
+// Default settings if none are found
+//* remove the ! if you are testing, and/or the settings are set wrong in the localStorage
+if (!localStorage.getItem('position')) {
+    localStorage.setItem('position', positions[1].value);
+    localStorage.setItem('dateFormat', dateformat[0].value);
+    localStorage.setItem('separator', separator[0].value);
+} else if (localStorage.getItem('position') != positions[0].value && localStorage.getItem('position') != positions[1].value) {
+    // Fallback for the position setting if it's not found in the positions array
+    localStorage.setItem('position', positions[1].value);
+}
+
 async function releaseDateCSS() {
     await waitForSpicetify();
 
     // Create CSS
     const ReleaseDateStyle = document.createElement('style');
     ReleaseDateStyle.innerHTML = `
+        .main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-nowPlayingWidget-trackInfo {
+            min-width: 14rem;
+        }
         #settingsMenu {
             display: none;
             position: absolute;
@@ -117,11 +131,9 @@ async function releaseDateCSS() {
             padding-left: 8px;
             margin-right: 8px;
         }
-        /*
-        .main-trackInfo-artists #releaseDate p:contains("•") {
-            transform: translateY(-1px);
+        #releaseDate a, #releaseDate p {
+            color: var(--text-subdued);
         }
-        */
         .main-trackInfo-overlay {
             margin-right: -8px;
         }
@@ -132,20 +144,12 @@ async function releaseDateCSS() {
                 margin-left: -4px;
                 padding-left: 0;
             }
+            .main-trackInfo-artists #releaseDate p:contains("•") {
+                transform: translateY(-1px);
+            }
         `;
     }
     return ReleaseDateStyle;
-}
-
-// Default settings if none are found
-//* remove the ! if you are testing, and/or the settings are set wrong in the localStorage
-if (!localStorage.getItem('position')) {
-    localStorage.setItem('position', positions[1].value);
-    localStorage.setItem('dateFormat', dateformat[0].value);
-    localStorage.setItem('separator', separator[0].value);
-} else if (localStorage.getItem('position') != positions[0].value && localStorage.getItem('position') != positions[1].value) {
-    // Fallback for the position setting if it's not found in the positions array
-    localStorage.setItem('position', positions[1].value);
 }
 
 // Get the details from the Spotify API
@@ -162,22 +166,13 @@ async function getTrackDetailsRD() {
     //? Uncomment the line below to see the track details in the console
     // console.log('currently playing:', currentlyPlaying);
     // console.log('currently track:', trackDetails);
+    // console.log('OS:', operatingSystem);
 
     return { trackDetails, album, releaseDate, operatingSystem };
 }
 
-
 //* Initialize
-if (window.operatingSystem === "Windows") {
-    // Start after 3 seconds to ensure it starts even on slower devices
-    setTimeout(() => initializeRD(), 3000);
-} else {
-    // Start after 3 seconds to ensure it starts even on slower devices
-    document.addEventListener('DOMContentLoaded', (event) => {
-        setTimeout(() => initializeRD(), 3000);
-    });
-}
-
+setTimeout(() => initializeRD(), 3000);
 
 async function initializeRD() {
     try {

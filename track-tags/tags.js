@@ -60,16 +60,7 @@ async function getTrackDetailsTags() {
 
 
 //* Initialize
-
-if (window.operatingSystem === "Windows") {
-    // Start after 3 seconds to ensure it starts even on slower devices
-    setTimeout(() => initializeTags(), 3000);
-} else {
-    // Start after 3 seconds to ensure it starts even on slower devices
-    document.addEventListener('DOMContentLoaded', (event) => {
-        setTimeout(() => initializeTags(), 3000);
-    });
-}
+setTimeout(() => initializeTags(), 3000);
 
 
 async function initializeTags() {
