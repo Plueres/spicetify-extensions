@@ -118,8 +118,8 @@ async function displayTags() {
         const tagsDiv = document.createElement('div');
         tagsDiv.setAttribute('class', 'playing-tags');
 
-        let playlistDetails = await Spicetify.Player.data.context;
-        // console.log("Playlist Details: ", playlistDetails);
+        let nowPlayingPlaylistDetails = await Spicetify.Player.data.context;
+        // console.log("Playlist Details: ", nowPlayingPlaylistDetails);
 
 
         downloadedSongs.items.forEach(song => {
@@ -130,27 +130,26 @@ async function displayTags() {
         });
 
 
-        if (playlistDetails.uri) {
-            const playlistSpan = document.createElement('span');
-            playlistSpan.setAttribute('class', 'Wrapper-sm-only Wrapper-small-only');
-            playlistSpan.setAttribute('title', 'This song is playing from this playlist');
-
-
+        if (nowPlayingPlaylistDetails.uri) {
             let playlistImgSrc;
             let pathname;
-            const split = playlistDetails.uri.split(':');
-            const playlist = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/playlists/${split[2]}`);
+            const split = nowPlayingPlaylistDetails.uri.split(':');
+            const playlistDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/playlists/${split[2]}`);
             if (split[3] == "collection") {
                 playlistImgSrc = "https://misc.scdn.co/liked-songs/liked-songs-640.png";
                 pathname = `/collection/tracks`;
             } else {
-                playlistImgSrc = playlist.images[0].url;
+                // console.log("Playlist: ", playlistDetails);
+                playlistImgSrc = playlistDetails.images[0].url;
                 pathname = `/${split[1]}/${split[2]}`;
             }
+            const playlistSpan = document.createElement('span');
+            playlistSpan.setAttribute('class', 'Wrapper-sm-only Wrapper-small-only');
+            playlistSpan.setAttribute('title', `Playing from ${playlistDetails.name}`);
 
             playlistSpan.onclick = async function () {
                 // console.log('[Track Tags] Saved track    ', Spicetify);
-                Spicetify.Platform.History.push(`${pathname}?uid=${playlistDetails.uid}&uri=${playlistDetails.uri}`);
+                Spicetify.Platform.History.push(`${pathname}?uid=${nowPlayingPlaylistDetails.uid}&uri=${nowPlayingPlaylistDetails.uri}`);
             };
 
             const playlistImg = document.createElement('img');
@@ -171,7 +170,7 @@ async function displayTags() {
             const savedTrackSpan = document.createElement('span');
 
             savedTrackSpan.setAttribute('class', 'Wrapper-sm-only Wrapper-small-only');
-            savedTrackSpan.setAttribute('title', 'This song is in your liked songs playlist\nClick to remove from liked songs');
+            savedTrackSpan.setAttribute('title', 'This song is in your liked songs playlist');
 
             const savedTrackSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             savedTrackSvg.setAttribute('role', 'img');
