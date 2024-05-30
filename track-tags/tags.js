@@ -110,15 +110,14 @@ async function initializeTags() {
 async function displayTags() {
     let downloaded = false;
     try {
-        const { trackDetails, savedTrack, likedSongs, downloadedSongs } = await getTrackDetailsTags();
+        const { trackDetails, savedTrack, downloadedSongs } = await getTrackDetailsTags();
 
-        // Get the artist name list element
         const Tagslist = document.querySelector('.main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced');
-        // Create a new div element
+
         const tagsDiv = document.createElement('div');
         tagsDiv.setAttribute('class', 'playing-tags');
 
-        let nowPlayingPlaylistDetails = await Spicetify.Player.data.context;
+        let nowPlayingPlaylistDetails = await Spicetify.Player.data;
         // console.log("Playlist Details: ", nowPlayingPlaylistDetails);
 
 
@@ -130,26 +129,36 @@ async function displayTags() {
         });
 
 
-        if (nowPlayingPlaylistDetails.uri) {
+        if (nowPlayingPlaylistDetails.context.uri) {
+            // console.log('[Track Tags]    ', Spicetify);
             let playlistImgSrc;
             let pathname;
-            const split = nowPlayingPlaylistDetails.uri.split(':');
-            const playlistDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/playlists/${split[2]}`);
+            const split = nowPlayingPlaylistDetails.context.uri.split(':');
+            // const playlistDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/playlists/${split[2]}`);
             if (split[3] == "collection") {
                 playlistImgSrc = "https://misc.scdn.co/liked-songs/liked-songs-640.png";
                 pathname = `/collection/tracks`;
             } else {
-                // console.log("Playlist: ", playlistDetails);
-                playlistImgSrc = playlistDetails.images[0].url;
+                playlistImgSrc = "https://image-cdn-ak.spotifycdn.com/image/" + nowPlayingPlaylistDetails.context.metadata.image_url;
                 pathname = `/${split[1]}/${split[2]}`;
             }
             const playlistSpan = document.createElement('span');
             playlistSpan.setAttribute('class', 'Wrapper-sm-only Wrapper-small-only');
-            playlistSpan.setAttribute('title', `Playing from ${playlistDetails.name}`);
+            playlistSpan.setAttribute('title', `Playing from ${nowPlayingPlaylistDetails.context.metadata.context_description}`);
 
             playlistSpan.onclick = async function () {
-                // console.log('[Track Tags] Saved track    ', Spicetify);
-                Spicetify.Platform.History.push(`${pathname}?uid=${nowPlayingPlaylistDetails.uid}&uri=${nowPlayingPlaylistDetails.uri}`);
+                Spicetify.Platform.History.push(`${pathname}/track/${trackDetails.id}?context=${nowPlayingPlaylistDetails.context.uri}`);
+                // console.log(nowPlayingPlaylistDetails);
+
+                new MutationObserver((mutations, observer) => {
+                    if (mutations.some(mutation => mutation.addedNodes.length)) {
+                        const element = document.querySelector(`[aria-rowindex="${nowPlayingPlaylistDetails.index.itemIndex - 1}"]`);
+                        if (element) {
+                            element.scrollIntoView();
+                            observer.disconnect();
+                        }
+                    }
+                }).observe(document, { childList: true, subtree: true });
             };
 
             const playlistImg = document.createElement('img');
@@ -162,8 +171,6 @@ async function displayTags() {
 
             // Add the span to the tags div
             tagsDiv.appendChild(playlistSpan);
-        } else {
-            console.error('Error: playlistDetails.uri in tags is false');
         }
         // Check if the song is saved to liked songs collection
         if (savedTrack[0]) {
@@ -186,7 +193,6 @@ async function displayTags() {
             savedTrackSpan.appendChild(savedTrackSvg);
 
             savedTrackSpan.onclick = async function () {
-                // console.log('[Track Tags] Saved track    ', Spicetify);
                 if (confirm('Are you sure you want to remove this song from your liked songs?')) {
                     Spicetify.CosmosAsync.del(`https://api.spotify.com/v1/me/tracks?ids=${trackDetails.id}`);
                     await removeExistingTagElement();
@@ -237,7 +243,7 @@ async function displayTags() {
         }
 
         // Append the div to Tagslist          
-        if (downloaded || trackDetails.explicit || savedTrack[0]) Tagslist.prepend(tagsDiv);
+        Tagslist.prepend(tagsDiv);
     } catch (error) {
         console.error('Error displaying tags: ', error);
     }
