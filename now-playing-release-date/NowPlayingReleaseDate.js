@@ -151,7 +151,8 @@ async function releaseDateCSS() {
 
 // Get the details from the Spotify API
 async function getTrackDetailsRD() {
-    let trackId = Spicetify.Player.data.item.uri.split(":")[2];
+    await waitForTrackData();
+    let trackId = await Spicetify.Player.data.item.uri.split(":")[2];
     let trackDetails = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`);
     //? only use this when a track is actually playing, not paused
     // let currentlyPlaying = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/player/currently-playing`);
@@ -189,7 +190,7 @@ async function initializeRD() {
                     await displayReleaseDate();
                     // Clear the timeout after displayReleaseDate has been called
                     debounceTimer = null;
-                }, 10);
+                }, 1);
             }
         });
 

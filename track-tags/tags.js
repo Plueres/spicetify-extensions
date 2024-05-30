@@ -35,16 +35,21 @@ async function tagCSS() {
             gap: 3px;
             min-width: 0;
         }
+        .playing-heart-tag {
+            cursor: pointer;
+        }
     `;
     return tagStyle;
 }
 
 // Get the track details from the Spotify API
 async function getTrackDetailsTags() {
-    let trackId = Spicetify.Player.data.item.uri.split(":")[2];
-    let [trackDetails, savedTrack, downloadedSongs] = await Promise.all([
+    await waitForTrackData();
+    let trackId = await Spicetify.Player.data.item.uri.split(":")[2];
+    let [trackDetails, savedTrack, removeTrack, downloadedSongs] = await Promise.all([
         Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`),
         Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`),
+        Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks?ids=${trackId}`),
         Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length)
     ]);
     //? only use this when a track is actually playing, not paused
@@ -55,7 +60,7 @@ async function getTrackDetailsTags() {
     // console.log("TrackDetails ", trackDetails);
     // console.log("Currently playing ", currentlyPlaying);
 
-    return { trackDetails, savedTrack, downloadedSongs, operatingSystem };
+    return { trackDetails, savedTrack, removeTrack, downloadedSongs, operatingSystem };
 }
 
 
@@ -81,7 +86,7 @@ async function initializeTags() {
                     await displayTags();
                     // Clear the timeout after displayReleaseDate has been called
                     debounceTimer = null;
-                }, 10);
+                }, 1);
             }
         });
 
@@ -101,7 +106,7 @@ async function initializeTags() {
 async function displayTags() {
     let downloaded = false;
     try {
-        const { trackDetails, savedTrack, downloadedSongs } = await getTrackDetailsTags();
+        const { trackDetails, savedTrack, removeTrack, downloadedSongs } = await getTrackDetailsTags();
 
         // Get the artist name list element
         const Tagslist = document.querySelector('.main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced');
@@ -121,7 +126,7 @@ async function displayTags() {
             const savedTrackSpan = document.createElement('span');
 
             savedTrackSpan.setAttribute('class', 'Wrapper-sm-only Wrapper-small-only');
-            savedTrackSpan.setAttribute('title', 'This song is in your liked songs playlist');
+            savedTrackSpan.setAttribute('title', 'This song is in your liked songs playlist\nClick to remove from liked songs');
 
             const savedTrackSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             savedTrackSvg.setAttribute('role', 'img');
@@ -135,6 +140,12 @@ async function displayTags() {
 
             savedTrackSvg.appendChild(savedTrackPath);
             savedTrackSpan.appendChild(savedTrackSvg);
+
+            savedTrackSpan.onclick = async function () {
+                console.log('[Track Tags] Saved track    ', Spicetify);
+                Spicetify.CosmosAsync.del(`https://api.spotify.com/v1/me/tracks?ids=${trackDetails.id}`);
+                await refreshTags();
+            };
 
             tagsDiv.appendChild(savedTrackSpan);
         }
@@ -151,7 +162,7 @@ async function displayTags() {
             downloadedSvg.setAttribute('role', 'img');
             downloadedSvg.setAttribute('aria-hidden', 'false');
             downloadedSvg.setAttribute('viewBox', '0 0 16 16');
-            downloadedSvg.setAttribute('class', 'Svg-sc-ytk21e-0 Svg-img-icon-small-textBrightAccent');
+            downloadedSvg.setAttribute('class', 'Svg-sc-ytk21e-0 Svg-img-icon-small-textBrightAccent playing-downloaded-tag');
 
             const downloadedPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             downloadedPath.setAttribute('d', 'M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-4.75a.75.75 0 0 0-.75.75v5.94L6.055 8.744a.75.75 0 1 0-1.06 1.06L8 12.811l3.005-3.006a.75.75 0 1 0-1.06-1.06L8.75 9.939V4A.75.75 0 0 0 8 3.25z');
@@ -185,4 +196,8 @@ async function displayTags() {
 function removeExistingTagElement() {
     const existingTagElements = document.querySelectorAll('.main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced .playing-tags');
     existingTagElements.forEach(element => element.remove());
+}
+function refreshTags() {
+    removeExistingTagElement();
+    initializeTags();
 }
