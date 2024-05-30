@@ -142,7 +142,7 @@ async function displayTags() {
             savedTrackSpan.appendChild(savedTrackSvg);
 
             savedTrackSpan.onclick = async function () {
-                console.log('[Track Tags] Saved track    ', Spicetify);
+                // console.log('[Track Tags] Saved track    ', Spicetify);
                 Spicetify.CosmosAsync.del(`https://api.spotify.com/v1/me/tracks?ids=${trackDetails.id}`);
                 await refreshTags();
             };
