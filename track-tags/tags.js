@@ -35,8 +35,12 @@ async function tagCSS() {
             gap: 3px;
             min-width: 0;
         }
+        .playing-playlist-tag,
         .playing-heart-tag {
             cursor: pointer;
+        }
+        .playing-playlist-tag {
+            border-radius: 50%;
         }
     `;
     return tagStyle;
@@ -46,10 +50,10 @@ async function tagCSS() {
 async function getTrackDetailsTags() {
     await waitForTrackData();
     let trackId = await Spicetify.Player.data.item.uri.split(":")[2];
-    let [trackDetails, savedTrack, removeTrack, downloadedSongs] = await Promise.all([
+    let [trackDetails, savedTrack, likedSongs, downloadedSongs] = await Promise.all([
         Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/tracks/${trackId}`),
         Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`),
-        Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks?ids=${trackId}`),
+        Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/me/tracks`),
         Spicetify.Platform.OfflineAPI._offline.getItems(0, Spicetify.Platform.OfflineAPI._offline.getItems.length)
     ]);
     //? only use this when a track is actually playing, not paused
@@ -60,7 +64,7 @@ async function getTrackDetailsTags() {
     // console.log("TrackDetails ", trackDetails);
     // console.log("Currently playing ", currentlyPlaying);
 
-    return { trackDetails, savedTrack, removeTrack, downloadedSongs, operatingSystem };
+    return { trackDetails, savedTrack, likedSongs, downloadedSongs, operatingSystem };
 }
 
 
@@ -106,13 +110,17 @@ async function initializeTags() {
 async function displayTags() {
     let downloaded = false;
     try {
-        const { trackDetails, savedTrack, removeTrack, downloadedSongs } = await getTrackDetailsTags();
+        const { trackDetails, savedTrack, likedSongs, downloadedSongs } = await getTrackDetailsTags();
 
         // Get the artist name list element
         const Tagslist = document.querySelector('.main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced');
         // Create a new div element
         const tagsDiv = document.createElement('div');
         tagsDiv.setAttribute('class', 'playing-tags');
+
+        let playlistDetails = await Spicetify.Player.data.context;
+        // console.log("Playlist Details: ", playlistDetails);
+
 
         downloadedSongs.items.forEach(song => {
             if (song.uri.includes(trackDetails.id)) {
@@ -121,6 +129,43 @@ async function displayTags() {
             }
         });
 
+
+        if (playlistDetails.uri) {
+            const playlistSpan = document.createElement('span');
+            playlistSpan.setAttribute('class', 'Wrapper-sm-only Wrapper-small-only');
+            playlistSpan.setAttribute('title', 'This song is playing from this playlist');
+
+
+            let playlistImgSrc;
+            let pathname;
+            const split = playlistDetails.uri.split(':');
+            const playlist = await Spicetify.CosmosAsync.get(`https://api.spotify.com/v1/playlists/${split[2]}`);
+            if (split[3] == "collection") {
+                playlistImgSrc = "https://misc.scdn.co/liked-songs/liked-songs-640.png";
+                pathname = `/collection/tracks`;
+            } else {
+                playlistImgSrc = playlist.images[0].url;
+                pathname = `/${split[1]}/${split[2]}`;
+            }
+
+            playlistSpan.onclick = async function () {
+                // console.log('[Track Tags] Saved track    ', Spicetify);
+                Spicetify.Platform.History.push(`${pathname}?uid=${playlistDetails.uid}&uri=${playlistDetails.uri}`);
+            };
+
+            const playlistImg = document.createElement('img');
+            playlistImg.setAttribute('src', playlistImgSrc);
+            playlistImg.setAttribute('height', '24');
+            playlistImg.setAttribute('width', '24');
+            playlistImg.setAttribute('class', 'Svg-img-icon-small-textBrightAccent playing-playlist-tag');
+
+            playlistSpan.appendChild(playlistImg);
+
+            // Add the span to the tags div
+            tagsDiv.appendChild(playlistSpan);
+        } else {
+            console.error('Error: playlistDetails.uri in tags is false');
+        }
         // Check if the song is saved to liked songs collection
         if (savedTrack[0]) {
             const savedTrackSpan = document.createElement('span');
@@ -143,8 +188,13 @@ async function displayTags() {
 
             savedTrackSpan.onclick = async function () {
                 // console.log('[Track Tags] Saved track    ', Spicetify);
-                Spicetify.CosmosAsync.del(`https://api.spotify.com/v1/me/tracks?ids=${trackDetails.id}`);
-                await refreshTags();
+                if (confirm('Are you sure you want to remove this song from your liked songs?')) {
+                    Spicetify.CosmosAsync.del(`https://api.spotify.com/v1/me/tracks?ids=${trackDetails.id}`);
+                    await removeExistingTagElement();
+                    setTimeout(() => {
+                        displayTags();
+                    }, 1000);
+                }
             };
 
             tagsDiv.appendChild(savedTrackSpan);
@@ -196,8 +246,4 @@ async function displayTags() {
 function removeExistingTagElement() {
     const existingTagElements = document.querySelectorAll('.main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced .playing-tags');
     existingTagElements.forEach(element => element.remove());
-}
-function refreshTags() {
-    removeExistingTagElement();
-    initializeTags();
 }
