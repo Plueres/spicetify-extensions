@@ -1,4 +1,4 @@
-console.log('tags loaded');
+console.log('[Track Tags] loaded');
 
 // Wait for spicetify to load initially
 async function waitForSpicetify() {
@@ -111,7 +111,7 @@ async function displayTags() {
 
         downloadedSongs.items.forEach(song => {
             if (song.uri.includes(trackDetails.id)) {
-                console.log('current song: ', song.uri, "\nDownloaded: ", true);
+                // console.log('current song: ', song.uri, "\nDownloaded: ", true);
                 downloaded = true;
             }
         });

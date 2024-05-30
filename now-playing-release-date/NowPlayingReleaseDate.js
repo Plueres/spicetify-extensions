@@ -1,4 +1,4 @@
-console.log('Now Playing Release Date loaded');
+console.log('[Now Playing Release Date] loaded');
 
 // Wait for spicetify to load initially
 async function waitForSpicetify() {
