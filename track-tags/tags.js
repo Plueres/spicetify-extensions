@@ -60,7 +60,9 @@ async function getTrackDetailsTags() {
 
 
 //* Initialize
-setTimeout(() => initializeTags(), 3000);
+(async function () {
+    await initializeTags();
+})();
 
 
 async function initializeTags() {
@@ -69,11 +71,7 @@ async function initializeTags() {
 
         // Debounce the song change event to prevent multiple calls
         let debounceTimer;
-        if (window.operatingSystem === "Windows") {
-            Spicetify.Player.dispatchEvent(new Event('songchange'));
-        } else {
-            await displayTags();
-        }
+
         Spicetify.Player.addEventListener("songchange", async () => {
             // Remove the existing release date element immediately when the song changes
             removeExistingTagElement();
@@ -86,6 +84,12 @@ async function initializeTags() {
                 }, 10);
             }
         });
+
+        if (window.operatingSystem === "Windows") {
+            await Spicetify.Player.dispatchEvent(new Event('songchange'));
+        } else {
+            await displayTags();
+        }
 
         // Add the style element to the head of the document
         document.head.appendChild(await tagCSS());

@@ -169,7 +169,9 @@ async function getTrackDetailsRD() {
 }
 
 //* Initialize
-setTimeout(() => initializeRD(), 3000);
+(async function () {
+    await initializeRD();
+})();
 
 async function initializeRD() {
     try {
@@ -177,11 +179,7 @@ async function initializeRD() {
 
         // Debounce the song change event to prevent multiple calls
         let debounceTimer;
-        if (window.operatingSystem === "Windows") {
-            Spicetify.Player.dispatchEvent(new Event('songchange'));
-        } else {
-            await displayReleaseDate();
-        }
+
         Spicetify.Player.addEventListener("songchange", async () => {
             // Remove the existing release date element immediately when the song changes
             removeExistingReleaseDateElement();
@@ -194,6 +192,12 @@ async function initializeRD() {
                 }, 10);
             }
         });
+
+        if (window.operatingSystem === "Windows") {
+            await Spicetify.Player.dispatchEvent(new Event('songchange'));
+        } else {
+            await displayReleaseDate();
+        }
 
         // Add the style element to the head of the document
         document.head.appendChild(await releaseDateCSS());
