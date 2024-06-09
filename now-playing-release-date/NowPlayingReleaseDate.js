@@ -26,7 +26,8 @@ window.operatingSystem = window.operatingSystem || null;
 // This is where the settings for the Positions, Date formats and separator style are located
 const positions = [
     { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-artists", text: "Artist" },
-    { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-name", text: "Song name" }
+    { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-name", text: "Song name" },
+    { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-album", text: "Genres" }
 ];
 const dateformat = [
     { value: "DD-MM-YYYY", text: "DD-MM-YYYY" },
@@ -35,7 +36,8 @@ const dateformat = [
 ];
 const separator = [
     { value: "•", text: "Dot" },
-    { value: "-", text: "Dash" }
+    { value: "-", text: "Dash" },
+    { value: " ", text: "None" },
 ]
 
 // Default settings if none are found
@@ -138,14 +140,6 @@ async function releaseDateCSS() {
             margin-right: -8px;
         }
     `;
-    if (window.operatingSystem === 'Linux') {
-        ReleaseDateStyle.innerHTML += `
-            #releaseDate {
-                margin-left: -4px;
-                padding-left: 0;
-            }
-        `;
-    }
     return ReleaseDateStyle;
 }
 
