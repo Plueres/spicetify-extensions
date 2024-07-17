@@ -26,8 +26,9 @@ window.operatingSystem = window.operatingSystem || null;
 // This is where the settings for the Positions, Date formats and separator style are located
 const positions = [
     { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-artists", text: "Artist" },
-    { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-name", text: "Song name" },
-    { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-album", text: "Genres" }
+    { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-name", text: "Song name" }
+    // ,
+    // { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-album", text: "Genres" }
 ];
 const dateformat = [
     { value: "DD-MM-YYYY", text: "DD-MM-YYYY" },
