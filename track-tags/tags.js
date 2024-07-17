@@ -119,10 +119,11 @@ async function displayTags() {
 
         if (nowPlayingPlaylistDetails.context.uri) {
             const split = nowPlayingPlaylistDetails.context.uri.split(':');
+            const playlistName = nowPlayingPlaylistDetails.context.metadata.format_list_type;
 
             const playlistSpan = document.createElement('span');
             playlistSpan.setAttribute('class', 'Wrapper-sm-only Wrapper-small-only');
-            if (split[3] == "collection") {
+            if (playlistName == "liked-songs") {
                 playlistImgSrc = "https://misc.scdn.co/liked-songs/liked-songs-300.png";
                 songLocation = `/${split[3]}/tracks?uri=${trackDetails.uri}`;
                 playlistSpan.setAttribute('title', `Playing from Liked Songs`);
@@ -138,6 +139,7 @@ async function displayTags() {
             playlistImg.setAttribute('height', '24');
             playlistImg.setAttribute('width', '24');
             playlistImg.setAttribute('class', 'Svg-img-icon-small-textBrightAccent playing-playlist-tag');
+            playlistImg.setAttribute('onerror', "this.onerror=null; this.src='https://raw.githubusercontent.com/Plueres/spicetify-extensions/main/track-tags/spotify_playlist.webp'");
 
             playlistSpan.appendChild(playlistImg);
 
