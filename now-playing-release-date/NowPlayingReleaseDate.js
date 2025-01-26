@@ -132,6 +132,7 @@ async function releaseDateCSS() {
             white-space: nowrap;
         }
         #releaseDate {
+            display: contents;
             margin-right: 8px;
         }
         #releaseDate a, #releaseDate p {
