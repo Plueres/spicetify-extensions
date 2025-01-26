@@ -22,8 +22,7 @@ window.operatingSystem = window.operatingSystem || null;
 
 const positions = [
     { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-artists", text: "Artist" },
-    { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-name", text: "Song name" },
-    { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-genres", text: "Genres" }
+    { value: ".main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-name", text: "Song name" }
 ];
 const dateformat = [
     { value: "DD-MM-YYYY", text: "DD-MM-YYYY" },
@@ -133,14 +132,10 @@ async function releaseDateCSS() {
             white-space: nowrap;
         }
         #releaseDate {
-            padding-left: 8px;
             margin-right: 8px;
         }
         #releaseDate a, #releaseDate p {
             color: var(--text-subdued);
-        }
-        .main-trackInfo-overlay {
-            margin-right: -8px;
         }
         .main-trackInfo-genres {
             grid-area: genres;
