@@ -27,21 +27,72 @@ async function tagCSS() {
     // CSS styles
     const tagStyle = document.createElement('style');
     tagStyle.innerHTML = `
-        .main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced {
-                align-items: center;
-            }
+        .main-nowPlayingWidget-nowPlaying:not(#upcomingSongDiv) .main-trackInfo-enhanced { align-items: center; }
         .playing-tags {
-            display: flex;
-            gap: 3px;
+            display: -webkit-inline-box;
+            display: -ms-inline-flexbox;
+            display: inline-flex;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            -ms-flex-pack: center;
+            color: var(--text-subdued);
+            gap: 4px;
+            height: 16px;
+            justify-content: center;
             min-width: 0;
         }
+        .playing-tags span {
+            display: flex;
+            align-content: center;
+            justify-content: center;
+            width: 16px;
+            height: 100%;
+        }
+        .playing-tags span * {
+            height: 100%;
+            width: 100%;
+        }
         .playing-playlist-tag,
-        .playing-heart-tag {
-            cursor: pointer;
+        .playing-heart-tag { cursor: pointer; }
+        
+        .playing-playlist-tag { border-radius: 50%; }
+        .playing-tags span .playing-heart-tag { fill: var(--text-bright-accent); }
+        .playing-tags span.playing-explicit-tag {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: -webkit-inline-box;
+            display: -ms-inline-flexbox;
+            display: inline-flex;
+            -webkit-box-pack: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            align-items: center;
+            background-color: var(--text-subdued);
+            border-radius: 2px;
+            color: var(--background-base);
+            -ms-flex-wrap: nowrap;
+            flex-wrap: nowrap;
+            font-size: 10.5px;
+            font-weight: 600;
+            gap: var(--encore-spacing-tighter-4);
+            line-height: 14px;
+            overflow: hidden;
+            padding-block: 1px;
+            padding-inline: 5px;
+            text-transform: capitalize;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            width: 16px;
+            height: 16px;
         }
-        .playing-playlist-tag {
-            border-radius: 50%;
-        }
+        .main-trackInfo-enhanced { gap: 6px; }
     `;
     return tagStyle;
 }
